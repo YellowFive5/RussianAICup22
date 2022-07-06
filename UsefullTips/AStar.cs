@@ -27,10 +27,7 @@ public class AStar
         public int HeuristicEstimatePathLength { get; set; }
 
         // Ожидаемое полное расстояние до цели (F).
-        public int EstimateFullPathLength
-        {
-            get { return PathLengthFromStart + HeuristicEstimatePathLength; }
-        }
+        public int EstimateFullPathLength => PathLengthFromStart + HeuristicEstimatePathLength;
 
         public static List<Point> FindPath(int[,] field, Point start, Point goal)
         {
@@ -38,19 +35,18 @@ public class AStar
             var closedSet = new Collection<PathNode>();
             var openSet = new Collection<PathNode>();
             // Шаг 2.
-            PathNode startNode = new PathNode
-                                 {
-                                     Position = start,
-                                     CameFrom = null,
-                                     PathLengthFromStart = 0,
-                                     HeuristicEstimatePathLength = GetHeuristicPathLength(start, goal)
-                                 };
+            var startNode = new PathNode
+                            {
+                                Position = start,
+                                CameFrom = null,
+                                PathLengthFromStart = 0,
+                                HeuristicEstimatePathLength = GetHeuristicPathLength(start, goal)
+                            };
             openSet.Add(startNode);
             while (openSet.Count > 0)
             {
                 // Шаг 3.
-                var currentNode = openSet.OrderBy(node =>
-                                                      node.EstimateFullPathLength).First();
+                var currentNode = openSet.OrderBy(node => node.EstimateFullPathLength).First();
                 // Шаг 4.
                 if (currentNode.Position == goal)
                 {
@@ -69,8 +65,7 @@ public class AStar
                         continue;
                     }
 
-                    var openNode = openSet.FirstOrDefault(node =>
-                                                              node.Position == neighbourNode.Position);
+                    var openNode = openSet.FirstOrDefault(node => node.Position == neighbourNode.Position);
                     // Шаг 8.
                     if (openNode == null)
                     {
@@ -104,7 +99,7 @@ public class AStar
             var result = new Collection<PathNode>();
 
             // Соседними точками являются соседние по стороне клетки.
-            Point[] neighbourPoints = new Point[4];
+            var neighbourPoints = new Point[4];
             neighbourPoints[0] = new Point(pathNode.Position.X + 1, pathNode.Position.Y);
             neighbourPoints[1] = new Point(pathNode.Position.X - 1, pathNode.Position.Y);
             neighbourPoints[2] = new Point(pathNode.Position.X, pathNode.Position.Y + 1);
