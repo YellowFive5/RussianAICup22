@@ -22,9 +22,8 @@ public static class Program
         var workFolder = new DirectoryInfo($"{runnerDir}/../StrategyTester");
         var testResultsFile = $"{runnerDir}/../TestResults.txt";
         var testIterations = 500;
-        var instances = 20;
-
-
+        var instances = 50;
+        
         // Linux
         // var runnerDir = @"/home/yellowfive/OneDrive/MY/#CODE/#RussianAiCup/'22/app-linux";
         // var runnerExe = @"/home/yellowfive/OneDrive/MY/#CODE/#RussianAiCup/'22/app-linux/aicup22";
@@ -41,7 +40,7 @@ public static class Program
                                       {
                                           var p = Process.Start(new ProcessStartInfo(runnerExe)
                                                                 {
-                                                                    Arguments = @$"--config {runnerDir}/../StrategyTester/configs/config{i}.json --batch-mode --save-results ../StrategyTester/{Guid.NewGuid()}.json",
+                                                                    Arguments = $"--config {runnerDir}/../StrategyTester/configs/config({i}).json --batch-mode --save-results ../StrategyTester/{Guid.NewGuid()}.json",
                                                                     WorkingDirectory = runnerDir
                                                                 });
                                           p.WaitForExitAsync().Wait();
