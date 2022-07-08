@@ -35,36 +35,60 @@ namespace AiCup22
             // DebugInterface.Add(new DebugData.Ring(World.NearestRifleAmmoLoot.Position, 2, 2, CustomDebug.VioletColor));
             // DebugInterface.Add(new DebugData.Ring(World.NearestSniperAmmoLoot.Position, 2, 2, CustomDebug.VioletColor));
 
-            if (Me.IsShieldInjured && !Me.IsPotionsEmpty)
+            // Need Heel
+            if (Me.IsShieldInjured)
             {
-                return TakePotion();
+                // Can be hit
+                if (World.IsNearestEnemyVisible && Measurer.IsHittableFromEnemy(Me, World.NearestEnemy))
+                {
+                    return RunAwayFrom(World.NearestEnemy);
+                }
+
+                // Heel
+                if (!Me.IsPotionsEmpty)
+                {
+                    return TakePotion();
+                }
             }
 
+            // Need take shield
             if (Me.IsPotionsUnderHalf && World.IsNearestShieldLootItemVisible)
             {
                 return GoPickup(World.NearestShieldLootItem);
             }
 
+            // Need take ammo
             if (Me.IsAmmoUnderHalf && World.IsNearestActiveAmmoVisible())
             {
                 return GoPickup(World.GetNearestActiveAmmoLoot());
             }
 
+            // See enemy
             if (World.IsNearestEnemyVisible && !Me.IsAmmoEmpty)
             {
+                // More than one
+                if (World.EnemyUnits.Count > 1)
+                {
+                    return RunAwayFrom(World.NearestEnemy);
+                }
+
+                // Can't hit
                 if (!Measurer.IsDistanceAllowToHit(Me, World.NearestEnemy))
                 {
                     return Go(World.NearestEnemy);
                 }
 
+                // Aim
                 if (!Me.IsAimed)
                 {
-                    return GoAim(World.NearestEnemy);
+                    return CameToAim(World.NearestEnemy);
                 }
 
-                return GoAim(World.NearestEnemy, true);
+                // Shoot
+                return CameToAim(World.NearestEnemy, true);
             }
 
+            // Change weapon
             if (Me.WeaponType == WeaponLootItem.WeaponType.Pistol)
             {
                 if (World.IsNearestSniperVisible)
@@ -87,6 +111,19 @@ namespace AiCup22
         }
 
         #region Actions
+
+        private Order RunAwayFrom(CustomItem item, bool shotOut = true)
+        {
+            var targetVelocity = Measurer.GetTargetVelocityTo(Me.Position, item.Position, true);
+            var targetDirection = Measurer.GetTargetDirectionTo(Me.Position, item.Position);
+            var actionAim = shotOut
+                                ? new ActionOrder.Aim(true)
+                                : null;
+
+            var myCommand = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(targetVelocity, targetDirection, actionAim) }, };
+
+            return new Order(myCommand);
+        }
 
         private Order GoPickup(CustomItem item)
         {
@@ -116,9 +153,9 @@ namespace AiCup22
             return new Order(myCommand);
         }
 
-        private Order GoAim(CustomItem item, bool withShot = false)
+        private Order CameToAim(CustomItem item, bool withShot = false)
         {
-            var targetVelocity = Measurer.GetTargetVelocityTo(Me.Position, item.Position);
+            var targetVelocity = Measurer.GetRandomVec();
             var targetDirection = Measurer.GetTargetDirectionTo(Me.Position, item.Position);
             var actionAim = new ActionOrder.Aim(withShot);
             var myCommand = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(targetVelocity, targetDirection, actionAim) }, };
@@ -129,7 +166,7 @@ namespace AiCup22
         private Order TakePotion()
         {
             var actionUseShieldPotion = new ActionOrder.UseShieldPotion();
-            var myCommand = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(new Vec2(), new Vec2(), actionUseShieldPotion) }, };
+            var myCommand = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(Measurer.GetRandomVec(), Measurer.GetRandomVec(), actionUseShieldPotion) }, };
 
             return new Order(myCommand);
         }

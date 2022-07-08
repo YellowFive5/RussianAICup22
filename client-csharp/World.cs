@@ -44,7 +44,7 @@ public class World
     public EnemyUnit NearestSniperEnemy => EnemyUnits.Where(e => e.WeaponType == WeaponLootItem.WeaponType.Sniper).OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
     public bool IsNearestSniperEnemyVisible => NearestSniperEnemy != null;
     public double NearestSniperEnemyDistance => Measurer.GetDistanceBetween(Me.Position, NearestSniperEnemy.Position);
-
+    
     #endregion
 
     #region Items
