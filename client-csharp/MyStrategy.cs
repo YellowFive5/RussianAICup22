@@ -30,10 +30,33 @@ namespace AiCup22
 
         private Order ChooseAction()
         {
-            if (!Me.IsPotionsFull && World.IsNearestShieldLootItemVisible)
+            // DebugInterface.Add(new DebugData.PlacedText(World.Me.Position, World.Me.Shield.ToString(), new Vec2(), 5, CustomDebug.BlueColor));
+            // DebugInterface.Add(new DebugData.Ring(World.Me.Position, World.SniperRange, 1, CustomDebug.VioletColor));
+
+            // if (Me.IsShieldDamaged)
+            // {
+            //     return TakePotion();
+            // }
+            //
+            // if (!Me.IsPotionsFull && World.IsNearestShieldLootItemVisible)
+            // {
+            //     return GoPickup(World.NearestShieldLootItem);
+            // }
+            //
+            // if (Me.IsPotionsFull)
+            // {
+            if (World.IsNearestEnemyVisible && Measurer.IsDistanceAllowToHit(Me, World.NearestEnemy))
             {
-                return GoPickup(World.NearestShieldLootItem);
+                if (!Me.IsAimed)
+                {
+                    return GoAim(World.NearestEnemy);
+                }
+
+                return GoAim(World.NearestEnemy, true);
             }
+
+            // }
+            return Go(World.ZoneNextCenter);
 
             return new Order(new Dictionary<int, UnitOrder>());
         }
@@ -47,6 +70,43 @@ namespace AiCup22
 
             return new Order(myCommand);
         }
+
+        private Order Go(CustomItem item)
+        {
+            var targetVelocity = Measurer.GetTargetVelocityTo(Me.Position, item.Position);
+            var targetDirection = Measurer.GetTargetDirectionTo(Me.Position, item.Position);
+            var myCommand = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(targetVelocity, targetDirection, null) }, };
+
+            return new Order(myCommand);
+        }
+
+        private Order Go(Vec2 item)
+        {
+            var targetVelocity = Measurer.GetTargetVelocityTo(Me.Position, item);
+            var targetDirection = Measurer.GetTargetDirectionTo(Me.Position, item);
+            var myCommand = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(targetVelocity, targetDirection, null) }, };
+
+            return new Order(myCommand);
+        }
+
+        private Order GoAim(CustomItem item, bool withShot = false)
+        {
+            var targetVelocity = Measurer.GetTargetVelocityTo(Me.Position, item.Position);
+            var targetDirection = Measurer.GetTargetDirectionTo(Me.Position, item.Position);
+            var actionAim = new ActionOrder.Aim(withShot);
+            var myCommand = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(targetVelocity, targetDirection, actionAim) }, };
+
+            return new Order(myCommand);
+        }
+
+        private Order TakePotion()
+        {
+            var actionUseShieldPotion = new ActionOrder.UseShieldPotion();
+            var myCommand = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(new Vec2(), new Vec2(), actionUseShieldPotion) }, };
+
+            return new Order(myCommand);
+        }
+
 
         public void DebugUpdate(DebugInterface debugInterface)
         {

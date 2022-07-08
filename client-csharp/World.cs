@@ -30,6 +30,18 @@ public class World
     public List<EnemyUnit> EnemyUnits { get; set; } = new();
     public EnemyUnit NearestEnemy => EnemyUnits.OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
     public bool IsNearestEnemyVisible => NearestEnemy != null;
+    public double NearestEnemyDistance => Measurer.GetDistanceBetween(Me.Position, NearestEnemy.Position);
+    public EnemyUnit NearestPistolEnemy => EnemyUnits.Where(e => e.WeaponType == WeaponLootItem.WeaponType.Pistol).OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
+    public bool IsNearestPistolEnemyVisible => NearestPistolEnemy != null;
+    public double NearestPistolEnemyDistance => Measurer.GetDistanceBetween(Me.Position, NearestPistolEnemy.Position);
+
+    public EnemyUnit NearestRifleEnemy => EnemyUnits.Where(e => e.WeaponType == WeaponLootItem.WeaponType.Rifle).OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
+    public bool IsNearestRifleEnemyVisible => NearestRifleEnemy != null;
+    public double NearestRifleEnemyDistance => Measurer.GetDistanceBetween(Me.Position, NearestRifleEnemy.Position);
+
+    public EnemyUnit NearestSniperEnemy => EnemyUnits.Where(e => e.WeaponType == WeaponLootItem.WeaponType.Sniper).OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
+    public bool IsNearestSniperEnemyVisible => NearestSniperEnemy != null;
+    public double NearestSniperEnemyDistance => Measurer.GetDistanceBetween(Me.Position, NearestSniperEnemy.Position);
 
     #endregion
 

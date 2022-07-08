@@ -1,6 +1,7 @@
 ﻿#region Usings
 
 using System;
+using AiCup22.CustomModel;
 using AiCup22.Model;
 
 #endregion
@@ -9,6 +10,10 @@ namespace AiCup22;
 
 public static class Measurer
 {
+    public const int PistolRange = 24;
+    public const int RifleRange = 16;
+    public const int SniperRange = 36;
+
     public static double GetDistanceBetween(Vec2 a, Vec2 b)
     {
         return Math.Sqrt(Math.Pow(a.X - b.X, 2) + Math.Pow(a.Y - b.Y, 2));
@@ -31,5 +36,22 @@ public static class Measurer
                    X = to.X - from.X + Math.Cos(angle) * 20,
                    Y = to.Y - from.Y + Math.Sin(angle) * 20
                };
+    }
+
+    public static bool IsDistanceAllowToHit(MyUnit me, EnemyUnit enemy)
+    {
+        switch (me.WeaponType)
+        {
+            case WeaponLootItem.WeaponType.Pistol:
+                return GetDistanceBetween(me.Position, enemy.Position) <= PistolRange;
+            case WeaponLootItem.WeaponType.Rifle:
+                return GetDistanceBetween(me.Position, enemy.Position) <= RifleRange;
+            case WeaponLootItem.WeaponType.Sniper:
+                return GetDistanceBetween(me.Position, enemy.Position) <= SniperRange;
+            case WeaponLootItem.WeaponType.None:
+                return false;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
     }
 }
