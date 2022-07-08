@@ -1,9 +1,11 @@
 ﻿#region Usings
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using AiCup22.CustomModel;
 using AiCup22.Model;
+using Object = AiCup22.CustomModel.Object;
 using Sound = AiCup22.CustomModel.Sound;
 
 #endregion
@@ -54,7 +56,6 @@ public class World
     public bool IsNearestRifleVisible => NearestRifle != null;
     public WeaponLootItem NearestSniper => WeaponItems.Where(e => e.Type == WeaponLootItem.WeaponType.Sniper).OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
     public bool IsNearestSniperVisible => NearestSniper != null;
-
     public List<AmmoLootItem> AmmoItems { get; set; } = new();
     public AmmoLootItem NearestPistolAmmoLoot => AmmoItems.Where(e => e.Type == WeaponLootItem.WeaponType.Pistol).OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
     public bool IsNearestPistolAmmoLootVisible => NearestPistolAmmoLoot != null;
@@ -64,6 +65,41 @@ public class World
 
     public AmmoLootItem NearestSniperAmmoLoot => AmmoItems.Where(e => e.Type == WeaponLootItem.WeaponType.Sniper).OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
     public bool IsNearestSniperAmmoLootVisible => NearestSniperAmmoLoot != null;
+
+    public AmmoLootItem GetNearestActiveAmmoLoot()
+    {
+        switch (Me.WeaponType)
+        {
+            case WeaponLootItem.WeaponType.Pistol:
+                return NearestPistolAmmoLoot;
+            case WeaponLootItem.WeaponType.Rifle:
+                return NearestRifleAmmoLoot;
+            case WeaponLootItem.WeaponType.Sniper:
+                return NearestSniperAmmoLoot;
+            case WeaponLootItem.WeaponType.None:
+                return null;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+    }
+
+    public bool IsNearestActiveAmmoVisible()
+    {
+        switch (Me.WeaponType)
+        {
+            case WeaponLootItem.WeaponType.Pistol:
+                return IsNearestPistolAmmoLootVisible;
+            case WeaponLootItem.WeaponType.Rifle:
+                return IsNearestRifleAmmoLootVisible;
+            case WeaponLootItem.WeaponType.Sniper:
+                return IsNearestSniperAmmoLootVisible;
+            case WeaponLootItem.WeaponType.None:
+                return false;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+    }
+
 
     public List<ShieldLootItem> ShieldItems { get; set; } = new();
     public ShieldLootItem NearestShieldLootItem => ShieldItems.OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();

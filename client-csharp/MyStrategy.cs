@@ -30,23 +30,51 @@ namespace AiCup22
 
         private Order ChooseAction()
         {
-            // DebugInterface.Add(new DebugData.PlacedText(World.Me.Position, World.Me.Shield.ToString(), new Vec2(), 5, CustomDebug.BlueColor));
-            // DebugInterface.Add(new DebugData.Ring(World.Me.Position, World.SniperRange, 1, CustomDebug.VioletColor));
+            // DebugInterface.Add(new DebugData.PlacedText(World.Me.Position, World.Me.Ammo.ToString(), new Vec2(), 5, CustomDebug.BlueColor));
+            // DebugInterface.Add(new DebugData.PlacedText(World.Me.Position, World.Me.Potions.ToString(), new Vec2(), 5, CustomDebug.VioletColor));
+            // DebugInterface.Add(new DebugData.Ring(World.NearestRifleAmmoLoot.Position, 2, 2, CustomDebug.VioletColor));
+            // DebugInterface.Add(new DebugData.Ring(World.NearestSniperAmmoLoot.Position, 2, 2, CustomDebug.VioletColor));
 
-            // if (Me.IsShieldDamaged)
-            // {
-            //     return TakePotion();
-            // }
-            //
-            // if (!Me.IsPotionsFull && World.IsNearestShieldLootItemVisible)
-            // {
-            //     return GoPickup(World.NearestShieldLootItem);
-            // }
-            //
-            // if (Me.IsPotionsFull)
-            // {
-            if (World.IsNearestEnemyVisible && Measurer.IsDistanceAllowToHit(Me, World.NearestEnemy))
+            if (Me.IsShieldInjured && !Me.IsPotionsEmpty)
             {
+                return TakePotion();
+            }
+
+            if (Me.IsPotionsUnderHalf && World.IsNearestShieldLootItemVisible)
+            {
+                return GoPickup(World.NearestShieldLootItem);
+            }
+
+            if (Me.IsAmmoUnderHalf && World.IsNearestActiveAmmoVisible())
+            {
+                return GoPickup(World.GetNearestActiveAmmoLoot());
+            }
+
+            if (Me.WeaponType == WeaponLootItem.WeaponType.Pistol)
+            {
+                if (World.IsNearestSniperVisible)
+                {
+                    return GoPickup(World.NearestSniper);
+                }
+
+                if (World.IsNearestRifleVisible)
+                {
+                    return GoPickup(World.NearestRifle);
+                }
+            }
+
+            if (Me.WeaponType == WeaponLootItem.WeaponType.Rifle && World.IsNearestSniperVisible)
+            {
+                return GoPickup(World.NearestSniper);
+            }
+
+            if (World.IsNearestEnemyVisible && !Me.IsAmmoEmpty)
+            {
+                if (!Measurer.IsDistanceAllowToHit(Me, World.NearestEnemy))
+                {
+                    return Go(World.NearestEnemy);
+                }
+
                 if (!Me.IsAimed)
                 {
                     return GoAim(World.NearestEnemy);
@@ -55,10 +83,7 @@ namespace AiCup22
                 return GoAim(World.NearestEnemy, true);
             }
 
-            // }
             return Go(World.ZoneNextCenter);
-
-            return new Order(new Dictionary<int, UnitOrder>());
         }
 
         #region Actions

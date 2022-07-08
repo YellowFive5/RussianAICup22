@@ -13,8 +13,8 @@ public abstract class CustomUnit : CustomItem
     public bool IsHealthDamaged => Health <= Constants.UnitHealth * 0.85;
     public bool IsHealthInjured => Health <= Constants.UnitHealth * 0.5;
     public double Shield { get; }
-    public bool IsShieldDamaged => Shield <= Constants.UnitHealth * 0.85;
-    public bool IsShieldInjured => Shield <= Constants.UnitHealth * 0.5;
+    public bool IsShieldDamaged => Shield <= Constants.MaxShield * 0.85;
+    public bool IsShieldInjured => Shield <= Constants.MaxShield * 0.5;
     public bool IsShieldEmpty => Shield <= 0;
 
     public int Potions { get; }
@@ -47,7 +47,7 @@ public abstract class CustomUnit : CustomItem
         Shield = unit.Shield;
         Potions = unit.ShieldPotions;
         Ammo = WeaponType == WeaponLootItem.WeaponType.None
-                   ? 0
+                   ? 3
                    : unit.Ammo[(int)WeaponType];
         Action = unit.Action;
     }
