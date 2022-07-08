@@ -1,3 +1,10 @@
+#region Usings
+
+using System;
+using System.IO;
+
+#endregion
+
 namespace AiCup22.Debugging
 {
     /// <summary>
@@ -6,10 +13,10 @@ namespace AiCup22.Debugging
     public abstract class DebugCommand
     {
         /// <summary> Write DebugCommand to writer </summary>
-        public abstract void WriteTo(System.IO.BinaryWriter writer);
+        public abstract void WriteTo(BinaryWriter writer);
 
         /// <summary> Read DebugCommand from reader </summary>
-        public static DebugCommand ReadFrom(System.IO.BinaryReader reader)
+        public static DebugCommand ReadFrom(BinaryReader reader)
         {
             switch (reader.ReadInt32())
             {
@@ -22,7 +29,7 @@ namespace AiCup22.Debugging
                 case Flush.TAG:
                     return Flush.ReadFrom(reader);
                 default:
-                    throw new System.Exception("Unexpected tag value");
+                    throw new Exception("Unexpected tag value");
             }
         }
 
@@ -32,36 +39,39 @@ namespace AiCup22.Debugging
         public class Add : DebugCommand
         {
             public const int TAG = 0;
-        
+
             /// <summary>
             /// Data to add
             /// </summary>
-            public AiCup22.Debugging.DebugData DebugData { get; set; }
-        
-            public Add() { }
-        
-            public Add(AiCup22.Debugging.DebugData debugData)
+            public DebugData DebugData { get; set; }
+
+            public Add()
             {
-                this.DebugData = debugData;
             }
-        
+
+            public Add(DebugData debugData)
+            {
+                DebugData = debugData;
+            }
+
             /// <summary> Read Add from reader </summary>
-            public static new Add ReadFrom(System.IO.BinaryReader reader)
+            public static new Add ReadFrom(BinaryReader reader)
             {
                 var result = new Add();
-                result.DebugData = AiCup22.Debugging.DebugData.ReadFrom(reader);
+                result.DebugData = DebugData.ReadFrom(reader);
                 return result;
             }
-        
+
             /// <summary> Write Add to writer </summary>
-            public override void WriteTo(System.IO.BinaryWriter writer)
+            public override void WriteTo(BinaryWriter writer)
             {
                 writer.Write(TAG);
                 DebugData.WriteTo(writer);
             }
-        
+
             /// <summary> Get string representation of Add </summary>
-            public override string ToString() {
+            public override string ToString()
+            {
                 string stringResult = "Add { ";
                 stringResult += "DebugData: ";
                 stringResult += DebugData.ToString();
@@ -76,25 +86,24 @@ namespace AiCup22.Debugging
         public class Clear : DebugCommand
         {
             public const int TAG = 1;
-        
-        
-            public Clear() { }
-        
+
+
             /// <summary> Read Clear from reader </summary>
-            public static new Clear ReadFrom(System.IO.BinaryReader reader)
+            public static new Clear ReadFrom(BinaryReader reader)
             {
                 var result = new Clear();
                 return result;
             }
-        
+
             /// <summary> Write Clear to writer </summary>
-            public override void WriteTo(System.IO.BinaryWriter writer)
+            public override void WriteTo(BinaryWriter writer)
             {
                 writer.Write(TAG);
             }
-        
+
             /// <summary> Get string representation of Clear </summary>
-            public override string ToString() {
+            public override string ToString()
+            {
                 string stringResult = "Clear { ";
                 stringResult += " }";
                 return stringResult;
@@ -107,36 +116,39 @@ namespace AiCup22.Debugging
         public class SetAutoFlush : DebugCommand
         {
             public const int TAG = 2;
-        
+
             /// <summary>
             /// Enable/disable autoflush
             /// </summary>
             public bool Enable { get; set; }
-        
-            public SetAutoFlush() { }
-        
+
+            public SetAutoFlush()
+            {
+            }
+
             public SetAutoFlush(bool enable)
             {
-                this.Enable = enable;
+                Enable = enable;
             }
-        
+
             /// <summary> Read SetAutoFlush from reader </summary>
-            public static new SetAutoFlush ReadFrom(System.IO.BinaryReader reader)
+            public static new SetAutoFlush ReadFrom(BinaryReader reader)
             {
                 var result = new SetAutoFlush();
                 result.Enable = reader.ReadBoolean();
                 return result;
             }
-        
+
             /// <summary> Write SetAutoFlush to writer </summary>
-            public override void WriteTo(System.IO.BinaryWriter writer)
+            public override void WriteTo(BinaryWriter writer)
             {
                 writer.Write(TAG);
                 writer.Write(Enable);
             }
-        
+
             /// <summary> Get string representation of SetAutoFlush </summary>
-            public override string ToString() {
+            public override string ToString()
+            {
                 string stringResult = "SetAutoFlush { ";
                 stringResult += "Enable: ";
                 stringResult += Enable.ToString();
@@ -151,25 +163,24 @@ namespace AiCup22.Debugging
         public class Flush : DebugCommand
         {
             public const int TAG = 3;
-        
-        
-            public Flush() { }
-        
+
+
             /// <summary> Read Flush from reader </summary>
-            public static new Flush ReadFrom(System.IO.BinaryReader reader)
+            public static new Flush ReadFrom(BinaryReader reader)
             {
                 var result = new Flush();
                 return result;
             }
-        
+
             /// <summary> Write Flush to writer </summary>
-            public override void WriteTo(System.IO.BinaryWriter writer)
+            public override void WriteTo(BinaryWriter writer)
             {
                 writer.Write(TAG);
             }
-        
+
             /// <summary> Get string representation of Flush </summary>
-            public override string ToString() {
+            public override string ToString()
+            {
                 string stringResult = "Flush { ";
                 stringResult += " }";
                 return stringResult;

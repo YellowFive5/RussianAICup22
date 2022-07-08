@@ -1,3 +1,10 @@
+#region Usings
+
+using System.IO;
+using System.Text;
+
+#endregion
+
 namespace AiCup22.Model
 {
     /// <summary>
@@ -9,44 +16,47 @@ namespace AiCup22.Model
         /// Name
         /// </summary>
         public string Name { get; set; }
+
         /// <summary>
         /// Distance from which the sound can be heard
         /// </summary>
         public double Distance { get; set; }
+
         /// <summary>
         /// Offset modifier
         /// </summary>
         public double Offset { get; set; }
-    
+
         public SoundProperties(string name, double distance, double offset)
         {
-            this.Name = name;
-            this.Distance = distance;
-            this.Offset = offset;
+            Name = name;
+            Distance = distance;
+            Offset = offset;
         }
-    
+
         /// <summary> Read SoundProperties from reader </summary>
-        public static SoundProperties ReadFrom(System.IO.BinaryReader reader)
+        public static SoundProperties ReadFrom(BinaryReader reader)
         {
             var result = new SoundProperties();
-            result.Name = System.Text.Encoding.UTF8.GetString(reader.ReadBytes(reader.ReadInt32()));
+            result.Name = Encoding.UTF8.GetString(reader.ReadBytes(reader.ReadInt32()));
             result.Distance = reader.ReadDouble();
             result.Offset = reader.ReadDouble();
             return result;
         }
-    
+
         /// <summary> Write SoundProperties to writer </summary>
-        public void WriteTo(System.IO.BinaryWriter writer)
+        public void WriteTo(BinaryWriter writer)
         {
-            var nameData = System.Text.Encoding.UTF8.GetBytes(Name);
+            var nameData = Encoding.UTF8.GetBytes(Name);
             writer.Write(nameData.Length);
             writer.Write(nameData);
             writer.Write(Distance);
             writer.Write(Offset);
         }
-    
+
         /// <summary> Get string representation of SoundProperties </summary>
-        public override string ToString() {
+        public override string ToString()
+        {
             string stringResult = "SoundProperties { ";
             stringResult += "Name: ";
             stringResult += "\"" + Name + "\"";

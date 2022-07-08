@@ -1,3 +1,10 @@
+#region Usings
+
+using System.IO;
+using AiCup22.Model;
+
+#endregion
+
 namespace AiCup22.Debugging
 {
     /// <summary>
@@ -8,36 +15,38 @@ namespace AiCup22.Debugging
         /// <summary>
         /// Position
         /// </summary>
-        public AiCup22.Model.Vec2 Position { get; set; }
+        public Vec2 Position { get; set; }
+
         /// <summary>
         /// Color
         /// </summary>
-        public AiCup22.Debugging.Color Color { get; set; }
-    
-        public ColoredVertex(AiCup22.Model.Vec2 position, AiCup22.Debugging.Color color)
+        public Color Color { get; set; }
+
+        public ColoredVertex(Vec2 position, Color color)
         {
-            this.Position = position;
-            this.Color = color;
+            Position = position;
+            Color = color;
         }
-    
+
         /// <summary> Read ColoredVertex from reader </summary>
-        public static ColoredVertex ReadFrom(System.IO.BinaryReader reader)
+        public static ColoredVertex ReadFrom(BinaryReader reader)
         {
             var result = new ColoredVertex();
-            result.Position = AiCup22.Model.Vec2.ReadFrom(reader);
-            result.Color = AiCup22.Debugging.Color.ReadFrom(reader);
+            result.Position = Vec2.ReadFrom(reader);
+            result.Color = Color.ReadFrom(reader);
             return result;
         }
-    
+
         /// <summary> Write ColoredVertex to writer </summary>
-        public void WriteTo(System.IO.BinaryWriter writer)
+        public void WriteTo(BinaryWriter writer)
         {
             Position.WriteTo(writer);
             Color.WriteTo(writer);
         }
-    
+
         /// <summary> Get string representation of ColoredVertex </summary>
-        public override string ToString() {
+        public override string ToString()
+        {
             string stringResult = "ColoredVertex { ";
             stringResult += "Position: ";
             stringResult += Position.ToString();

@@ -1,3 +1,10 @@
+#region Usings
+
+using System;
+using System.IO;
+
+#endregion
+
 namespace AiCup22.Model
 {
     /// <summary>
@@ -9,15 +16,18 @@ namespace AiCup22.Model
         /// Picking up or dropping loot
         /// </summary>
         Looting = 0,
+
         /// <summary>
         /// Using a shield potion
         /// </summary>
         UseShieldPotion = 1,
     }
 
-    public static class ActionTypeHelper {
+    public static class ActionTypeHelper
+    {
         /// <summary> Read ActionType from reader </summary>
-        public static ActionType ReadFrom(System.IO.BinaryReader reader) {
+        public static ActionType ReadFrom(BinaryReader reader)
+        {
             switch (reader.ReadInt32())
             {
                 case 0:
@@ -25,7 +35,7 @@ namespace AiCup22.Model
                 case 1:
                     return ActionType.UseShieldPotion;
                 default:
-                    throw new System.Exception("Unexpected tag value");
+                    throw new Exception("Unexpected tag value");
             }
         }
     }
