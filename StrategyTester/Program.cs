@@ -48,25 +48,31 @@ public static class Program
                                       });
         }
 
-        var kills = new List<int>();
+        var kills = new List<double>();
         var damages = new List<double>();
-        var places = new List<int>();
+        var places = new List<double>();
         var scores = new List<double>();
-
+        var crashes = 0;
 
         foreach (var file in workFolder.GetFiles("*.json"))
         {
             var result = JObject.Parse(File.ReadAllText(file.FullName));
-            kills.Add(result["results"]["players"][0]["kills"].Value<int>());
+            kills.Add(result["results"]["players"][0]["kills"].Value<double>());
             damages.Add(result["results"]["players"][0]["damage"].Value<double>());
-            places.Add(result["results"]["players"][0]["place"].Value<int>());
+            places.Add(result["results"]["players"][0]["place"].Value<double>());
             scores.Add(result["results"]["players"][0]["score"].Value<double>());
+            if (result["players"][0]["crashed"].Value<bool>())
+            {
+                crashes++;
+            }
+
             File.Delete(file.FullName);
         }
 
         var resultData = "\n" +
                          "*** *** *** \n" +
                          "\n" +
+                         $"Crashes: {crashes}\n" +
                          $"Avg score {scores.Sum() / scores.Count} \n" +
                          $"Avg place {places.Sum() / places.Count} \n" +
                          $"Total score {scores.Sum()} \n" +
