@@ -16,9 +16,9 @@ public static class Program
 {
     public static async Task Main(string[] args)
     {
-        var testIterations = 500;
+        var testIterations = 20;
         var instances = 20;
-        var runnerDir = @"C:\Users\YellowFive\OneDrive\MY\#CODE\#RussianAiCup\'22\app-windows";
+        var runnerDir = $"{AppDomain.CurrentDomain.BaseDirectory}../../../../../app-windows";
 
         for (var i = 0; i < testIterations / instances; i++)
         {
@@ -28,7 +28,7 @@ public static class Program
                                       {
                                           var p = Process.Start(new ProcessStartInfo(@$"{runnerDir}\aicup22.exe")
                                                                 {
-                                                                    Arguments = @$"--config {runnerDir}\StrategyTester\configs\config{i}.json --batch-mode --save-results ./StrategyTester/{Guid.NewGuid()}.json",
+                                                                    Arguments = @$"--config {runnerDir}/../StrategyTester/configs/config{i}.json --batch-mode --save-results ../StrategyTester/{Guid.NewGuid()}.json",
                                                                     WorkingDirectory = runnerDir
                                                                 });
                                           p.WaitForExitAsync().Wait();
@@ -40,7 +40,7 @@ public static class Program
         var places = new List<int>();
         var scores = new List<double>();
 
-        var workFolder = new DirectoryInfo($@"{runnerDir}\StrategyTester");
+        var workFolder = new DirectoryInfo($"{runnerDir}/../StrategyTester");
 
         foreach (var file in workFolder.GetFiles("*.json"))
         {
@@ -69,7 +69,7 @@ public static class Program
 
         Console.WriteLine(resultData);
 
-        var testResultsFile = @$"{runnerDir}\TestResults.txt";
+        var testResultsFile = $"{runnerDir}/../TestResults.txt";
         var currentContent = await File.ReadAllTextAsync(testResultsFile);
         await File.WriteAllTextAsync(testResultsFile, resultData + currentContent);
     }
