@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using AiCup22.CustomModel;
-using AiCup22.Debugging;
 using AiCup22.Model;
 
 #endregion
@@ -12,6 +11,8 @@ namespace AiCup22
     public class MyStrategy
     {
         private World World { get; }
+        private MyUnit Me => World.Me;
+        private DebugInterface DebugInterface { get; set; }
 
         public MyStrategy(Constants constants)
         {
@@ -20,6 +21,8 @@ namespace AiCup22
 
         public Order GetOrder(Game game, DebugInterface debugInterface)
         {
+            DebugInterface = debugInterface;
+
             World.Scan(game);
 
             return ChooseAction();
@@ -27,7 +30,7 @@ namespace AiCup22
 
         private Order ChooseAction()
         {
-            if (!World.Me.IsPotionsFull && World.IsNearestNearestShieldLootItemVisible)
+            if (!Me.IsPotionsFull && World.IsNearestShieldLootItemVisible)
             {
                 return GoPickup(World.NearestShieldLootItem);
             }
@@ -37,10 +40,11 @@ namespace AiCup22
 
         private Order GoPickup(CustomItem item)
         {
-            var targetVelocity = Measurer.GetTargetDirectionTo(World.Me.Position, item.Position);
-            var targetDirection = Measurer.GetTargetVelocityTo(World.Me.Position, item.Position);
+            var targetVelocity = Measurer.GetTargetVelocityTo(Me.Position, item.Position);
+            var targetDirection = Measurer.GetTargetDirectionTo(Me.Position, item.Position);
             var actionPickup = new ActionOrder.Pickup(item.Id);
-            var myCommand = new Dictionary<int, UnitOrder> { { World.Me.Id, new UnitOrder(targetVelocity, targetDirection, actionPickup) }, };
+            var myCommand = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(targetVelocity, targetDirection, actionPickup) }, };
+
             return new Order(myCommand);
         }
 
@@ -80,9 +84,9 @@ namespace AiCup22
             //
             // debugInterface.Add(new DebugData.Ring(World.NearestRifle.Position, 1, 1, CustomDebug.RedColor));
             //
-            // debugInterface.Add(new DebugData.PlacedText(World.Me.Position, World.AmmoItems.Count.ToString(), new Vec2(), 5, CustomDebug.RedColor));
+            // debugInterface.Add(new DebugData.PlacedText(Me.Position, Me.Ammo.ToString(), new Vec2(), 5, CustomDebug.RedColor));
             // debugInterface.Add(new DebugData.PlacedText(World.Me.Position, World.NearestEnemy.Position.ToString(), new Vec2(), 5, CustomDebug.BlueColor));
-            debugInterface.Add(new DebugData.PlacedText(World.Me.Position, World.Me.Unit.Aim.ToString(), new Vec2(), 5, CustomDebug.BlueColor));
+            // debugInterface.Add(new DebugData.PlacedText(World.Me.Position, World.Me.Unit.Aim.ToString(), new Vec2(), 5, CustomDebug.BlueColor));
         }
 
         public void Finish()

@@ -55,7 +55,7 @@ public class World
 
     public List<ShieldLootItem> ShieldItems { get; set; } = new();
     public ShieldLootItem NearestShieldLootItem => ShieldItems.OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
-    public bool IsNearestNearestShieldLootItemVisible => NearestShieldLootItem != null;
+    public bool IsNearestShieldLootItemVisible => NearestShieldLootItem != null;
 
     #endregion
 

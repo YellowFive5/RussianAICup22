@@ -23,12 +23,13 @@ public static class Measurer
                };
     }
 
-    public static Vec2 GetTargetVelocityTo(Vec2 from, Vec2 to) // todo slowdown
+    public static Vec2 GetTargetVelocityTo(Vec2 from, Vec2 to)
     {
+        var angle = (float)Math.Atan2(to.Y - from.Y, to.X - from.X);
         return new Vec2
                {
-                   X = Math.Pow(to.X - from.X, 2),
-                   Y = Math.Pow(to.Y - from.Y, 2)
+                   X = to.X - from.X + Math.Cos(angle) * 20,
+                   Y = to.Y - from.Y + Math.Sin(angle) * 20
                };
     }
 }
