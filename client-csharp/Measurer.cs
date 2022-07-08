@@ -14,7 +14,8 @@ public static class Measurer
     public const double RifleRange = 16;
     public const double SniperRange = 36;
 
-    public const double Coefficient = 0.2;
+    public const double HitRangeCoefficient = 0.2;
+    public const double InZonePointCoefficient = 0.1;
 
     public static double GetDistanceBetween(Vec2 a, Vec2 b)
     {
@@ -67,6 +68,16 @@ public static class Measurer
                };
     }
 
+    public static Vec2 GetZoneBorderPoint(CustomItem item, Vec2 zoneCenter, double zoneRadius)
+    {
+        var vX = item.Position.X - zoneCenter.X;
+        var vY = item.Position.Y - zoneCenter.Y;
+        var magV = Math.Sqrt(vX * vX + vY * vY);
+        var aX = zoneCenter.X + vX / magV * (zoneRadius - InZonePointCoefficient * zoneRadius);
+        var aY = zoneCenter.Y + vY / magV * (zoneRadius  - InZonePointCoefficient * zoneRadius);
+        return new Vec2 { X = aX, Y = aY };
+    }
+
     public static bool IsDistanceAllowToHit(MyUnit me, EnemyUnit enemy)
     {
         switch (me.WeaponType)
@@ -89,11 +100,11 @@ public static class Measurer
         switch (enemy.WeaponType)
         {
             case WeaponLootItem.WeaponType.Pistol:
-                return GetDistanceBetween(me.Position, enemy.Position) <= PistolRange * (1 + Coefficient);
+                return GetDistanceBetween(me.Position, enemy.Position) <= PistolRange * (1 + HitRangeCoefficient);
             case WeaponLootItem.WeaponType.Rifle:
-                return GetDistanceBetween(me.Position, enemy.Position) <= RifleRange * (1 + Coefficient);
+                return GetDistanceBetween(me.Position, enemy.Position) <= RifleRange * (1 + HitRangeCoefficient);
             case WeaponLootItem.WeaponType.Sniper:
-                return GetDistanceBetween(me.Position, enemy.Position) <= SniperRange * (1 + Coefficient);
+                return GetDistanceBetween(me.Position, enemy.Position) <= SniperRange * (1 + HitRangeCoefficient);
             case WeaponLootItem.WeaponType.None:
                 return false;
             default:

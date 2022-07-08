@@ -113,7 +113,7 @@ namespace AiCup22
                 return GoPickup(World.NearestSniper);
             }
 
-            return Go(World.ZoneNextCenter);
+            return Go(Measurer.GetZoneBorderPoint(Me, World.ZoneCenter, World.ZoneRadius));
         }
 
         #region Actions
