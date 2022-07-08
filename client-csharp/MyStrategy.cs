@@ -62,13 +62,32 @@ namespace AiCup22
             {
                 return GoPickup(World.NearestShieldLootItem);
             }
-
+            
             // Need take ammo
-            if (Me.IsAmmoUnderHalf && World.IsNearestActiveAmmoVisible())
+            if (Me.IsOutOfAmmo && World.IsNearestActiveAmmoVisible())
             {
                 return GoPickup(World.GetNearestActiveAmmoLoot());
             }
 
+            // Change weapon
+            if (Me.WeaponType == WeaponLootItem.WeaponType.Pistol)
+            {
+                if (World.IsNearestSniperVisible)
+                {
+                    return GoPickup(World.NearestSniper);
+                }
+
+                if (World.IsNearestRifleVisible)
+                {
+                    return GoPickup(World.NearestRifle);
+                }
+            }
+
+            if (Me.WeaponType == WeaponLootItem.WeaponType.Rifle && World.IsNearestSniperVisible)
+            {
+                return GoPickup(World.NearestSniper);
+            }
+            
             // See enemy
             if (World.IsNearestEnemyVisible && !Me.IsAmmoEmpty)
             {
@@ -94,26 +113,8 @@ namespace AiCup22
                 return CameToAim(World.NearestEnemy, true);
             }
 
-            // Change weapon
-            if (Me.WeaponType == WeaponLootItem.WeaponType.Pistol)
-            {
-                if (World.IsNearestSniperVisible)
-                {
-                    return GoPickup(World.NearestSniper);
-                }
-
-                if (World.IsNearestRifleVisible)
-                {
-                    return GoPickup(World.NearestRifle);
-                }
-            }
-
-            if (Me.WeaponType == WeaponLootItem.WeaponType.Rifle && World.IsNearestSniperVisible)
-            {
-                return GoPickup(World.NearestSniper);
-            }
-
-            return Go(Measurer.GetZoneBorderPoint(Me, World.ZoneCenter, World.ZoneRadius));
+            // return Go(Measurer.GetZoneBorderPoint(Me, World.ZoneCenter, World.ZoneRadius));
+            return Go(World.ZoneCenter);
         }
 
         #region Actions
