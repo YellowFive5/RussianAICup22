@@ -19,7 +19,6 @@ namespace AiCup22
         public Order GetOrder(Game game, DebugInterface debugInterface)
         {
             World.Scan(game);
-            
 
             ActionOrder.Aim actionAim;
 
