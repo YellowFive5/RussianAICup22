@@ -13,7 +13,7 @@ public class Object : CustomItem
     public bool IsTransparent { get; }
     public double Radius { get; }
 
-    public Object(Obstacle obstacle) : base(obstacle.Id, obstacle.Position)
+    public Object(Obstacle obstacle, Constants constants) : base(obstacle.Id, obstacle.Position, constants)
     {
         Obstacle = obstacle;
         IsBulletProof = obstacle.CanShootThrough;

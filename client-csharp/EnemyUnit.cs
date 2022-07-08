@@ -9,7 +9,7 @@ namespace AiCup22;
 
 public class EnemyUnit : CustomUnit
 {
-    public EnemyUnit(Unit unit) : base(unit)
+    public EnemyUnit(Unit unit, Constants constants) : base(unit, constants)
     {
     }
 }

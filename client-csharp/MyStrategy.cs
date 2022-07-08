@@ -1,6 +1,8 @@
 #region Usings
 
 using System.Collections.Generic;
+using AiCup22.CustomModel;
+using AiCup22.Debugging;
 using AiCup22.Model;
 
 #endregion
@@ -19,31 +21,65 @@ namespace AiCup22
         public Order GetOrder(Game game, DebugInterface debugInterface)
         {
             World.Scan(game);
+            var targetVelocity = new Vec2();
+            var targetDirection = new Vec2();
+            var actionAim = new ActionOrder.Aim(false);
+            var actionPickup = new ActionOrder.Pickup();
+            var unitOrder = new UnitOrder();
 
-            ActionOrder.Aim actionAim;
-
-            Vec2 targetVelocity = new Vec2();
-            Vec2 targetDirection = new Vec2();
-
-            actionAim = new ActionOrder.Aim(true); // стрелять
-            if (actionAim == null)
+            if (World.IsNearestNearestShieldLootItemVisible && !World.Me.IsPotionsFull)
             {
+                targetVelocity = Measurer.GetTargetDirectionTo(World.Me.Position, World.NearestShieldLootItem.Position);
+
+                targetDirection = Measurer.GetTargetVelocityTo(World.Me.Position, World.NearestShieldLootItem.Position);
+
                 actionAim = new ActionOrder.Aim(false);
+                actionPickup = new ActionOrder.Pickup(World.NearestShieldLootItem.Id);
             }
 
-
-            targetVelocity.X = 10; // бежать будете просто в право и немного вверх 
-            targetVelocity.Y = 10;
-
-            UnitOrder UnitOrder1 = new UnitOrder(targetVelocity, targetDirection, actionAim); // создаете контейнер с командами кроме стрельбы может быть любое действие откройте в среде объект, выберите и создайте
-            Dictionary<int, UnitOrder> MyCommand = new Dictionary<int, UnitOrder>(); // создание словаря для отдачи
-            MyCommand.Add(World.Me.Id, UnitOrder1); // добавляем в словарь нашего колдуна и его команды, в этом примере он не в себе
-            return new Order(MyCommand); // возвращаете свой словарь
-            // надеюсь кому поможет
+            unitOrder = new UnitOrder(targetVelocity, targetDirection, actionPickup);
+            var myCommand = new Dictionary<int, UnitOrder> { { World.Me.Id, unitOrder } };
+            return new Order(myCommand);
         }
 
         public void DebugUpdate(DebugInterface debugInterface)
         {
+            debugInterface.Clear();
+            
+            // if (World.IsNearestEnemyVisible)
+            // {
+            //     debugInterface.Add(new DebugData.Ring(World.NearestEnemy.Position, 1, 1, CustomDebug.RedColor));
+            // }
+
+            // foreach (var enemy in World.EnemyUnits)
+            // {
+            //     debugInterface.Add(new DebugData.Ring(enemy.Position, 1, 1, CustomDebug.GreenColor));
+            // }
+            // if (World.IsNearestNearestShieldLootItemVisible)
+            // {
+            //     debugInterface.Add(new DebugData.Ring(World.NearestShieldLootItem.Position, 1, 1, CustomDebug.VioletColor));
+            // }
+            //
+            // debugInterface.Add(new DebugData.PlacedText(World.Me.Position, World.Me.Potions.ToString(), new Vec2(), 5, CustomDebug.RedColor));
+            // foreach (var enemy in World.Sounds)
+            // {
+            //     debugInterface.Add(new DebugData.Ring(enemy.Position, 1, 1, CustomDebug.BlueColor));
+            // }
+
+            // if (World.IsNearestSoundHeard)
+            // {
+            //     debugInterface.Add(new DebugData.Ring(World.NearestSound.Position, 1, 1, CustomDebug.RedColor));
+            // }
+
+            // foreach (var shield in World.ShieldItems)
+            // {
+            //     debugInterface.Add(new DebugData.Ring(shield.Position, 1, 1, CustomDebug.VioletColor));
+            // }
+            //
+            // debugInterface.Add(new DebugData.Ring(World.NearestRifle.Position, 1, 1, CustomDebug.RedColor));
+            //
+            // debugInterface.Add(new DebugData.PlacedText(World.Me.Position, World.AmmoItems.Count.ToString(), new Vec2(), 5, CustomDebug.RedColor));
+            // debugInterface.Add(new DebugData.PlacedText(World.Me.Position, World.NearestEnemy.Position.ToString(), new Vec2(), 5, CustomDebug.BlueColor));
         }
 
         public void Finish()

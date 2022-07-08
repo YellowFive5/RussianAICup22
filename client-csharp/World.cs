@@ -100,11 +100,11 @@ public class World
         {
             if (unit.PlayerId == game.MyId)
             {
-                MyUnits.Add(new MyUnit(unit));
+                MyUnits.Add(new MyUnit(unit, Constants));
             }
             else
             {
-                EnemyUnits.Add(new EnemyUnit(unit));
+                EnemyUnits.Add(new EnemyUnit(unit, Constants));
             }
         }
 
@@ -116,13 +116,13 @@ public class World
             switch (loot.Item)
             {
                 case Item.Weapon:
-                    WeaponItems.Add(new WeaponLootItem(loot));
+                    WeaponItems.Add(new WeaponLootItem(loot, Constants));
                     break;
                 case Item.Ammo:
-                    AmmoItems.Add(new AmmoLootItem(loot));
+                    AmmoItems.Add(new AmmoLootItem(loot, Constants));
                     break;
                 case Item.ShieldPotions:
-                    ShieldItems.Add(new ShieldLootItem(loot));
+                    ShieldItems.Add(new ShieldLootItem(loot, Constants));
                     break;
             }
         }
@@ -130,19 +130,19 @@ public class World
         Bullets = new List<Bullet>();
         foreach (var projectile in game.Projectiles)
         {
-            Bullets.Add(new Bullet(projectile));
+            Bullets.Add(new Bullet(projectile, Constants));
         }
 
         Objects = new List<Object>();
         foreach (var obstacle in Constants.Obstacles)
         {
-            Objects.Add(new Object(obstacle));
+            Objects.Add(new Object(obstacle, Constants));
         }
 
         Sounds = new List<Sound>();
         foreach (var sound in game.Sounds)
         {
-            Sounds.Add(new Sound(sound));
+            Sounds.Add(new Sound(sound, Constants));
         }
     }
 }

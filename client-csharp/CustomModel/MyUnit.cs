@@ -8,7 +8,7 @@ namespace AiCup22.CustomModel;
 
 public class MyUnit : CustomUnit
 {
-    public MyUnit(Unit unit) : base(unit)
+    public MyUnit(Unit unit, Constants constants) : base(unit, constants)
     {
     }
 }

@@ -12,7 +12,7 @@ public class Bullet : CustomItem
     public WeaponLootItem.WeaponType WeaponType { get; }
     public Vec2 Velocity { get; }
 
-    public Bullet(Projectile projectile) : base(projectile.Id, projectile.Position)
+    public Bullet(Projectile projectile, Constants constants) : base(projectile.Id, projectile.Position, constants)
     {
         Projectile = projectile;
         WeaponType = projectile.WeaponTypeIndex switch

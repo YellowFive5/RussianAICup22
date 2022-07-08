@@ -10,7 +10,7 @@ public abstract class CustomLootItem : CustomItem
 {
     public Loot Loot { get; }
 
-    protected CustomLootItem(Loot loot) : base(loot.Id, loot.Position)
+    protected CustomLootItem(Loot loot, Constants constants) : base(loot.Id, loot.Position, constants)
     {
         Loot = loot;
     }

@@ -18,7 +18,7 @@ public class WeaponLootItem : CustomLootItem
 
     public WeaponType Type { get; }
 
-    public WeaponLootItem(Loot loot) : base(loot)
+    public WeaponLootItem(Loot loot, Constants constants) : base(loot, constants)
     {
         var weapon = loot.Item as Item.Weapon;
         Type = weapon.TypeIndex switch
