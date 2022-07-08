@@ -6,11 +6,9 @@ using AiCup22.Model;
 
 namespace AiCup22.CustomModel;
 
-public abstract class CustomUnit
+public abstract class CustomUnit : CustomItem
 {
     public Unit Unit { get; }
-    public int Id { get; }
-    public Vec2 Position { get; }
     public double Health { get; }
     public double Shield { get; }
     public int Potions { get; }
@@ -20,11 +18,9 @@ public abstract class CustomUnit
     public bool IsLooting => Action?.ActionType == ActionType.Looting;
     public bool IsHeeling => Action?.ActionType == ActionType.UseShieldPotion;
 
-    protected CustomUnit(Unit unit)
+    protected CustomUnit(Unit unit) : base(unit.Id, unit.Position)
     {
         Unit = unit;
-        Id = unit.Id;
-        Position = unit.Position;
         WeaponType = unit.Weapon switch
         {
             0 => WeaponLootItem.WeaponType.Pistol,

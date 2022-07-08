@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using AiCup22.CustomModel;
 using AiCup22.Model;
+using Sound = AiCup22.CustomModel.Sound;
 
 #endregion
 
@@ -25,33 +26,42 @@ public class World
     #region Units
 
     public MyUnit Me => MyUnits.First(); // todo Round 1 only
-    public List<MyUnit> MyUnits { get; } = new();
-    public List<EnemyUnit> EnemyUnits { get; } = new();
-
+    public List<MyUnit> MyUnits { get; set; } = new();
+    public List<EnemyUnit> EnemyUnits { get; set; } = new();
     public EnemyUnit NearestEnemy => EnemyUnits.OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
+    public bool IsNearestEnemyVisible => NearestEnemy != null;
 
     #endregion
 
     #region Items
 
-    public List<WeaponLootItem> WeaponItems { get; } = new();
+    public List<WeaponLootItem> WeaponItems { get; set; } = new();
     public WeaponLootItem NearestPistol => WeaponItems.Where(e => e.Type == WeaponLootItem.WeaponType.Pistol).OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
+    public bool IsNearestPistolVisible => NearestPistol != null;
     public WeaponLootItem NearestRifle => WeaponItems.Where(e => e.Type == WeaponLootItem.WeaponType.Rifle).OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
+    public bool IsNearestRifleVisible => NearestRifle != null;
     public WeaponLootItem NearestSniper => WeaponItems.Where(e => e.Type == WeaponLootItem.WeaponType.Sniper).OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
+    public bool IsNearestSniperVisible => NearestSniper != null;
 
-    public List<AmmoLootItem> AmmoItems { get; } = new();
+    public List<AmmoLootItem> AmmoItems { get; set; } = new();
     public AmmoLootItem NearestPistolAmmoLoot => AmmoItems.Where(e => e.Type == WeaponLootItem.WeaponType.Pistol).OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
-    public AmmoLootItem NearestRifleAmmoLoot => AmmoItems.Where(e => e.Type == WeaponLootItem.WeaponType.Rifle).OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
-    public AmmoLootItem NearestSniperAmmoLoot => AmmoItems.Where(e => e.Type == WeaponLootItem.WeaponType.Sniper).OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
+    public bool IsNearestPistolAmmoLootVisible => NearestPistolAmmoLoot != null;
 
-    public List<ShieldLootItem> ShieldItems { get; } = new();
+    public AmmoLootItem NearestRifleAmmoLoot => AmmoItems.Where(e => e.Type == WeaponLootItem.WeaponType.Rifle).OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
+    public bool IsNearestRifleAmmoLootVisible => NearestRifleAmmoLoot != null;
+
+    public AmmoLootItem NearestSniperAmmoLoot => AmmoItems.Where(e => e.Type == WeaponLootItem.WeaponType.Sniper).OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
+    public bool IsNearestSniperAmmoLootVisible => NearestSniperAmmoLoot != null;
+
+    public List<ShieldLootItem> ShieldItems { get; set; } = new();
     public ShieldLootItem NearestShieldLootItem => ShieldItems.OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
+    public bool IsNearestNearestShieldLootItemVisible => NearestShieldLootItem != null;
 
     #endregion
 
     #region Objects
 
-    public List<Object> Objects { get; } = new();
+    public List<Object> Objects { get; set; } = new();
     public Object NearestObject => Objects.OrderBy(o => Measurer.GetDistanceBetween(Me.Position, o.Position)).FirstOrDefault();
     public Object NearestCoverObject => Objects.Where(o => o.IsBulletProof).OrderBy(o => Measurer.GetDistanceBetween(Me.Position, o.Position)).FirstOrDefault();
 
@@ -59,8 +69,16 @@ public class World
 
     #region Bullets
 
-    public List<Bullet> Bullets { get; } = new();
+    public List<Bullet> Bullets { get; set; } = new();
     public Bullet NearestBullet => Bullets.Where(b => b.Projectile.ShooterPlayerId != Me.Unit.PlayerId).OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
+
+    #endregion
+
+    #region Sounds
+
+    public List<Sound> Sounds { get; set; } = new();
+    public Sound NearestSound => Sounds.OrderBy(s => Measurer.GetDistanceBetween(Me.Position, s.Position)).FirstOrDefault();
+    public bool IsNearestSoundHeard => NearestSound != null;
 
     #endregion
 
@@ -76,6 +94,8 @@ public class World
         ZoneNextCenter = game.Zone.NextCenter;
         ZoneNextRadius = game.Zone.NextRadius;
 
+        EnemyUnits = new List<EnemyUnit>();
+        MyUnits = new List<MyUnit>();
         foreach (var unit in game.Units)
         {
             if (unit.PlayerId == game.MyId)
@@ -88,6 +108,9 @@ public class World
             }
         }
 
+        WeaponItems = new List<WeaponLootItem>();
+        AmmoItems = new List<AmmoLootItem>();
+        ShieldItems = new List<ShieldLootItem>();
         foreach (var loot in game.Loot)
         {
             switch (loot.Item)
@@ -104,14 +127,22 @@ public class World
             }
         }
 
+        Bullets = new List<Bullet>();
         foreach (var projectile in game.Projectiles)
         {
             Bullets.Add(new Bullet(projectile));
         }
 
+        Objects = new List<Object>();
         foreach (var obstacle in Constants.Obstacles)
         {
             Objects.Add(new Object(obstacle));
+        }
+
+        Sounds = new List<Sound>();
+        foreach (var sound in game.Sounds)
+        {
+            Sounds.Add(new Sound(sound));
         }
     }
 }

@@ -11,6 +11,7 @@ public abstract class CustomItem
     public int Id { get; }
     public Vec2 Position { get; }
 
+
     protected CustomItem(int id, Vec2 position)
     {
         Id = id;
