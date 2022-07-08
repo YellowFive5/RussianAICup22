@@ -14,7 +14,7 @@ public static class Measurer
     public const double RifleRange = 16;
     public const double SniperRange = 36;
 
-    public const double Coefficient = 0.15;
+    public const double Coefficient = 0.2;
 
     public static double GetDistanceBetween(Vec2 a, Vec2 b)
     {
@@ -72,11 +72,11 @@ public static class Measurer
         switch (me.WeaponType)
         {
             case WeaponLootItem.WeaponType.Pistol:
-                return GetDistanceBetween(me.Position, enemy.Position) <= PistolRange * (1 - Coefficient);
+                return GetDistanceBetween(me.Position, enemy.Position) <= PistolRange;
             case WeaponLootItem.WeaponType.Rifle:
-                return GetDistanceBetween(me.Position, enemy.Position) <= RifleRange * (1 - Coefficient);
+                return GetDistanceBetween(me.Position, enemy.Position) <= RifleRange;
             case WeaponLootItem.WeaponType.Sniper:
-                return GetDistanceBetween(me.Position, enemy.Position) <= SniperRange * (1 - Coefficient);
+                return GetDistanceBetween(me.Position, enemy.Position) <= SniperRange;
             case WeaponLootItem.WeaponType.None:
                 return false;
             default:

@@ -35,6 +35,12 @@ namespace AiCup22
             // DebugInterface.Add(new DebugData.Ring(World.NearestRifleAmmoLoot.Position, 2, 2, CustomDebug.VioletColor));
             // DebugInterface.Add(new DebugData.Ring(World.NearestSniperAmmoLoot.Position, 2, 2, CustomDebug.VioletColor));
 
+            // OutOfZone
+            if (World.OutOfZone)
+            {
+                return Go(World.ZoneCenter);
+            }
+
             // Need Heel
             if (Me.IsShieldInjured)
             {

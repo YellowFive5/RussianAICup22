@@ -28,6 +28,7 @@ public class World
     #region Units
 
     public MyUnit Me => MyUnits.First(); // todo Round 1 only
+    public bool OutOfZone { get; set; }
     public List<MyUnit> MyUnits { get; set; } = new();
     public List<EnemyUnit> EnemyUnits { get; set; } = new();
     public EnemyUnit NearestEnemy => EnemyUnits.OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
@@ -44,7 +45,7 @@ public class World
     public EnemyUnit NearestSniperEnemy => EnemyUnits.Where(e => e.WeaponType == WeaponLootItem.WeaponType.Sniper).OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
     public bool IsNearestSniperEnemyVisible => NearestSniperEnemy != null;
     public double NearestSniperEnemyDistance => Measurer.GetDistanceBetween(Me.Position, NearestSniperEnemy.Position);
-    
+
     #endregion
 
     #region Items
@@ -142,8 +143,8 @@ public class World
         ZoneNextCenter = game.Zone.NextCenter;
         ZoneNextRadius = game.Zone.NextRadius;
 
-        EnemyUnits = new List<EnemyUnit>();
         MyUnits = new List<MyUnit>();
+        EnemyUnits = new List<EnemyUnit>();
         foreach (var unit in game.Units)
         {
             if (unit.PlayerId == game.MyId)
@@ -156,6 +157,7 @@ public class World
             }
         }
 
+        OutOfZone = Measurer.GetDistanceBetween(ZoneCenter, Me.Position) >= game.Zone.CurrentRadius;
         WeaponItems = new List<WeaponLootItem>();
         AmmoItems = new List<AmmoLootItem>();
         ShieldItems = new List<ShieldLootItem>();
