@@ -4,7 +4,7 @@ using AiCup22.Model;
 
 #endregion
 
-namespace AiCup22;
+namespace AiCup22.CustomModel;
 
 public class MyUnit : CustomUnit
 {

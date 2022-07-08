@@ -1,5 +1,6 @@
 ﻿#region Usings
 
+using AiCup22.CustomModel;
 using AiCup22.Model;
 
 #endregion

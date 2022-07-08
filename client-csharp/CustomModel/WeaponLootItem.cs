@@ -4,9 +4,9 @@ using AiCup22.Model;
 
 #endregion
 
-namespace AiCup22;
+namespace AiCup22.CustomModel;
 
-public class WeaponItem : CustomItem
+public class WeaponLootItem : CustomLootItem
 {
     public enum WeaponType
     {
@@ -18,7 +18,7 @@ public class WeaponItem : CustomItem
 
     public WeaponType Type { get; }
 
-    public WeaponItem(Loot loot) : base(loot)
+    public WeaponLootItem(Loot loot) : base(loot)
     {
         var weapon = loot.Item as Item.Weapon;
         Type = weapon.TypeIndex switch

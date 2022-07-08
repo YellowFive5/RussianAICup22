@@ -4,13 +4,13 @@ using AiCup22.Model;
 
 #endregion
 
-namespace AiCup22;
+namespace AiCup22.CustomModel;
 
-public class ShieldItem : CustomItem
+public class ShieldLootItem : CustomLootItem
 {
     public int Amount { get; }
 
-    public ShieldItem(Loot loot) : base(loot)
+    public ShieldLootItem(Loot loot) : base(loot)
     {
         var shield = loot.Item as Item.ShieldPotions;
         Amount = shield.Amount;
