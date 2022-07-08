@@ -61,6 +61,8 @@ namespace AiCup22
             return new Order(new Dictionary<int, UnitOrder>());
         }
 
+        #region Actions
+
         private Order GoPickup(CustomItem item)
         {
             var targetVelocity = Measurer.GetTargetVelocityTo(Me.Position, item.Position);
@@ -107,6 +109,7 @@ namespace AiCup22
             return new Order(myCommand);
         }
 
+        #endregion
 
         public void DebugUpdate(DebugInterface debugInterface)
         {

@@ -1,11 +1,10 @@
 ﻿#region Usings
 
-using AiCup22.CustomModel;
 using AiCup22.Model;
 
 #endregion
 
-namespace AiCup22;
+namespace AiCup22.CustomModel;
 
 public class EnemyUnit : CustomUnit
 {
