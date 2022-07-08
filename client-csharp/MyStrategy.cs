@@ -50,6 +50,21 @@ namespace AiCup22
                 return GoPickup(World.GetNearestActiveAmmoLoot());
             }
 
+            if (World.IsNearestEnemyVisible && !Me.IsAmmoEmpty)
+            {
+                if (!Measurer.IsDistanceAllowToHit(Me, World.NearestEnemy))
+                {
+                    return Go(World.NearestEnemy);
+                }
+
+                if (!Me.IsAimed)
+                {
+                    return GoAim(World.NearestEnemy);
+                }
+
+                return GoAim(World.NearestEnemy, true);
+            }
+
             if (Me.WeaponType == WeaponLootItem.WeaponType.Pistol)
             {
                 if (World.IsNearestSniperVisible)
@@ -66,21 +81,6 @@ namespace AiCup22
             if (Me.WeaponType == WeaponLootItem.WeaponType.Rifle && World.IsNearestSniperVisible)
             {
                 return GoPickup(World.NearestSniper);
-            }
-
-            if (World.IsNearestEnemyVisible && !Me.IsAmmoEmpty)
-            {
-                if (!Measurer.IsDistanceAllowToHit(Me, World.NearestEnemy))
-                {
-                    return Go(World.NearestEnemy);
-                }
-
-                if (!Me.IsAimed)
-                {
-                    return GoAim(World.NearestEnemy);
-                }
-
-                return GoAim(World.NearestEnemy, true);
             }
 
             return Go(World.ZoneNextCenter);
