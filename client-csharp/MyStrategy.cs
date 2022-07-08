@@ -9,8 +9,11 @@ namespace AiCup22
 {
     public class MyStrategy
     {
+        private World World { get; }
+
         public MyStrategy(Constants constants)
         {
+            World = new World();
         }
 
         public Order GetOrder(Game game, DebugInterface debugInterface)
