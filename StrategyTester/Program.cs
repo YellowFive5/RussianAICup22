@@ -16,10 +16,22 @@ public static class Program
 {
     public static async Task Main(string[] args)
     {
-        var testIterations = 20;
-        var instances = 20;
-        // var runnerDir = $"{AppDomain.CurrentDomain.BaseDirectory}../../../../../app-linux";
-        var runnerDir = $"{AppDomain.CurrentDomain.BaseDirectory}../../../../../app-windows";
+        // Win
+        // var runnerDir = $"{AppDomain.CurrentDomain.BaseDirectory}../../../../../app-windows";
+        // var runnerExe = @$"{runnerDir}\aicup22.exe";
+        // var workFolder = new DirectoryInfo($"{runnerDir}/../StrategyTester");
+        // var testResultsFile = $"{runnerDir}/../TestResults.txt";
+        // var testIterations = 20;
+        // var instances = 20;
+
+
+        // Linux
+        var runnerDir = @"/home/yellowfive/OneDrive/MY/#CODE/#RussianAiCup/'22/app-linux";
+        var runnerExe = @"/home/yellowfive/OneDrive/MY/#CODE/#RussianAiCup/'22/app-linux/aicup22";
+        var workFolder = new DirectoryInfo(@"/home/yellowfive/OneDrive/MY/#CODE/#RussianAiCup/'22/StrategyTester");
+        var testResultsFile = @"/home/yellowfive/OneDrive/MY/#CODE/#RussianAiCup/'22/TestResults.txt";
+        var testIterations = 2;
+        var instances = 2;
 
         for (var i = 0; i < testIterations / instances; i++)
         {
@@ -27,8 +39,7 @@ public static class Program
                                       instances,
                                       (i, state) =>
                                       {
-                                          var p = Process.Start(new ProcessStartInfo(@$"{runnerDir}\aicup22.exe")
-                                          // var p = Process.Start(new ProcessStartInfo(@$"{runnerDir}\aicup22")
+                                          var p = Process.Start(new ProcessStartInfo(runnerExe)
                                                                 {
                                                                     Arguments = @$"--config {runnerDir}/../StrategyTester/configs/config{i}.json --batch-mode --save-results ../StrategyTester/{Guid.NewGuid()}.json",
                                                                     WorkingDirectory = runnerDir
@@ -42,7 +53,6 @@ public static class Program
         var places = new List<int>();
         var scores = new List<double>();
 
-        var workFolder = new DirectoryInfo($"{runnerDir}/../StrategyTester");
 
         foreach (var file in workFolder.GetFiles("*.json"))
         {
@@ -71,7 +81,6 @@ public static class Program
 
         Console.WriteLine(resultData);
 
-        var testResultsFile = $"{runnerDir}/../TestResults.txt";
         var currentContent = await File.ReadAllTextAsync(testResultsFile);
         await File.WriteAllTextAsync(testResultsFile, resultData + currentContent);
     }
