@@ -21,31 +21,33 @@ namespace AiCup22
         public Order GetOrder(Game game, DebugInterface debugInterface)
         {
             World.Scan(game);
-            var targetVelocity = new Vec2();
-            var targetDirection = new Vec2();
-            var actionAim = new ActionOrder.Aim(false);
-            var actionPickup = new ActionOrder.Pickup();
-            var unitOrder = new UnitOrder();
 
-            if (World.IsNearestNearestShieldLootItemVisible && !World.Me.IsPotionsFull)
+            return ChooseAction();
+        }
+
+        private Order ChooseAction()
+        {
+            if (!World.Me.IsPotionsFull && World.IsNearestNearestShieldLootItemVisible)
             {
-                targetVelocity = Measurer.GetTargetDirectionTo(World.Me.Position, World.NearestShieldLootItem.Position);
-
-                targetDirection = Measurer.GetTargetVelocityTo(World.Me.Position, World.NearestShieldLootItem.Position);
-
-                actionAim = new ActionOrder.Aim(false);
-                actionPickup = new ActionOrder.Pickup(World.NearestShieldLootItem.Id);
+                return GoPickup(World.NearestShieldLootItem);
             }
 
-            unitOrder = new UnitOrder(targetVelocity, targetDirection, actionPickup);
-            var myCommand = new Dictionary<int, UnitOrder> { { World.Me.Id, unitOrder } };
+            return new Order(new Dictionary<int, UnitOrder>());
+        }
+
+        private Order GoPickup(CustomItem item)
+        {
+            var targetVelocity = Measurer.GetTargetDirectionTo(World.Me.Position, item.Position);
+            var targetDirection = Measurer.GetTargetVelocityTo(World.Me.Position, item.Position);
+            var actionPickup = new ActionOrder.Pickup(item.Id);
+            var myCommand = new Dictionary<int, UnitOrder> { { World.Me.Id, new UnitOrder(targetVelocity, targetDirection, actionPickup) }, };
             return new Order(myCommand);
         }
 
         public void DebugUpdate(DebugInterface debugInterface)
         {
             debugInterface.Clear();
-            
+
             // if (World.IsNearestEnemyVisible)
             // {
             //     debugInterface.Add(new DebugData.Ring(World.NearestEnemy.Position, 1, 1, CustomDebug.RedColor));
@@ -80,6 +82,7 @@ namespace AiCup22
             //
             // debugInterface.Add(new DebugData.PlacedText(World.Me.Position, World.AmmoItems.Count.ToString(), new Vec2(), 5, CustomDebug.RedColor));
             // debugInterface.Add(new DebugData.PlacedText(World.Me.Position, World.NearestEnemy.Position.ToString(), new Vec2(), 5, CustomDebug.BlueColor));
+            debugInterface.Add(new DebugData.PlacedText(World.Me.Position, World.Me.Unit.Aim.ToString(), new Vec2(), 5, CustomDebug.BlueColor));
         }
 
         public void Finish()

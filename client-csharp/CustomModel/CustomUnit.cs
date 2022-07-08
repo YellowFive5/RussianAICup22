@@ -15,16 +15,23 @@ public abstract class CustomUnit : CustomItem
     public double Shield { get; }
     public bool IsShieldDamaged => Shield <= Constants.UnitHealth * 0.85;
     public bool IsShieldInjured => Shield <= Constants.UnitHealth * 0.5;
-    public bool IsShieldTotallyBroken => Shield <= 0;
+    public bool IsShieldEmpty => Shield <= 0;
 
     public int Potions { get; }
     public bool IsPotionsFull => Potions >= Constants.MaxShieldPotionsInInventory;
     public bool IsPotionsUnderHalf => Potions <= Constants.MaxShieldPotionsInInventory * 0.5;
+    public bool IsPotionsEmpty => Potions <= 0;
     public WeaponLootItem.WeaponType WeaponType { get; }
     public int Ammo { get; }
+    public bool IsAmmoFull => Ammo <= Constants.Weapons[(int)WeaponType].MaxInventoryAmmo * 0.85;
+    public bool IsAmmoUnderHalf => Ammo <= Constants.Weapons[(int)WeaponType].MaxInventoryAmmo * 0.5;
+    public bool IsAmmoEmpty => Ammo <= 0;
+
     public Action? Action { get; }
     public bool IsLooting => Action?.ActionType == ActionType.Looting;
     public bool IsHeeling => Action?.ActionType == ActionType.UseShieldPotion;
+    public bool IsAimed => Unit.Aim >= 1;
+    public bool IsHalfAimed => Unit.Aim > 0.5;
 
     protected CustomUnit(Unit unit, Constants constants) : base(unit.Id, unit.Position, constants)
     {

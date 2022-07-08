@@ -10,7 +10,7 @@ public class WeaponLootItem : CustomLootItem
 {
     public enum WeaponType
     {
-        Pistol,
+        Pistol = 0,
         Rifle,
         Sniper,
         None
