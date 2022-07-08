@@ -17,21 +17,21 @@ public static class Program
     public static async Task Main(string[] args)
     {
         // Win
-        // var runnerDir = $"{AppDomain.CurrentDomain.BaseDirectory}../../../../../app-windows";
-        // var runnerExe = @$"{runnerDir}\aicup22.exe";
-        // var workFolder = new DirectoryInfo($"{runnerDir}/../StrategyTester");
-        // var testResultsFile = $"{runnerDir}/../TestResults.txt";
-        // var testIterations = 20;
-        // var instances = 20;
+        var runnerDir = $"{AppDomain.CurrentDomain.BaseDirectory}../../../../../app-windows";
+        var runnerExe = @$"{runnerDir}\aicup22.exe";
+        var workFolder = new DirectoryInfo($"{runnerDir}/../StrategyTester");
+        var testResultsFile = $"{runnerDir}/../TestResults.txt";
+        var testIterations = 20;
+        var instances = 20;
 
 
         // Linux
-        var runnerDir = @"/home/yellowfive/OneDrive/MY/#CODE/#RussianAiCup/'22/app-linux";
-        var runnerExe = @"/home/yellowfive/OneDrive/MY/#CODE/#RussianAiCup/'22/app-linux/aicup22";
-        var workFolder = new DirectoryInfo(@"/home/yellowfive/OneDrive/MY/#CODE/#RussianAiCup/'22/StrategyTester");
-        var testResultsFile = @"/home/yellowfive/OneDrive/MY/#CODE/#RussianAiCup/'22/TestResults.txt";
-        var testIterations = 2;
-        var instances = 2;
+        // var runnerDir = @"/home/yellowfive/OneDrive/MY/#CODE/#RussianAiCup/'22/app-linux";
+        // var runnerExe = @"/home/yellowfive/OneDrive/MY/#CODE/#RussianAiCup/'22/app-linux/aicup22";
+        // var workFolder = new DirectoryInfo(@"/home/yellowfive/OneDrive/MY/#CODE/#RussianAiCup/'22/StrategyTester");
+        // var testResultsFile = @"/home/yellowfive/OneDrive/MY/#CODE/#RussianAiCup/'22/TestResults.txt";
+        // var testIterations = 2;
+        // var instances = 2;
 
         for (var i = 0; i < testIterations / instances; i++)
         {
