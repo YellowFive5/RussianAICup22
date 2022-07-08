@@ -18,6 +18,7 @@ public static class Program
     {
         var testIterations = 20;
         var instances = 20;
+        // var runnerDir = $"{AppDomain.CurrentDomain.BaseDirectory}../../../../../app-linux";
         var runnerDir = $"{AppDomain.CurrentDomain.BaseDirectory}../../../../../app-windows";
 
         for (var i = 0; i < testIterations / instances; i++)
@@ -27,6 +28,7 @@ public static class Program
                                       (i, state) =>
                                       {
                                           var p = Process.Start(new ProcessStartInfo(@$"{runnerDir}\aicup22.exe")
+                                          // var p = Process.Start(new ProcessStartInfo(@$"{runnerDir}\aicup22")
                                                                 {
                                                                     Arguments = @$"--config {runnerDir}/../StrategyTester/configs/config{i}.json --batch-mode --save-results ../StrategyTester/{Guid.NewGuid()}.json",
                                                                     WorkingDirectory = runnerDir
