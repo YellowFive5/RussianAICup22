@@ -1,8 +1,11 @@
 ﻿#region Usings
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using AiCup22.CustomModel;
 using AiCup22.Model;
+using Object = AiCup22.CustomModel.Object;
 
 #endregion
 
@@ -74,20 +77,20 @@ public static class Measurer
         var vY = item.Position.Y - zoneCenter.Y;
         var magV = Math.Sqrt(vX * vX + vY * vY);
         var aX = zoneCenter.X + vX / magV * (zoneRadius - InZonePointCoefficient * zoneRadius);
-        var aY = zoneCenter.Y + vY / magV * (zoneRadius  - InZonePointCoefficient * zoneRadius);
+        var aY = zoneCenter.Y + vY / magV * (zoneRadius - InZonePointCoefficient * zoneRadius);
         return new Vec2 { X = aX, Y = aY };
     }
 
-    public static bool IsDistanceAllowToHit(MyUnit me, EnemyUnit enemy)
+    public static bool IsDistanceAllowToHit(MyUnit me, EnemyUnit enemy, double coefficient = 1)
     {
         switch (me.WeaponType)
         {
             case WeaponLootItem.WeaponType.Pistol:
-                return GetDistanceBetween(me.Position, enemy.Position) <= PistolRange;
+                return GetDistanceBetween(me.Position, enemy.Position) <= PistolRange * coefficient;
             case WeaponLootItem.WeaponType.Rifle:
-                return GetDistanceBetween(me.Position, enemy.Position) <= RifleRange;
+                return GetDistanceBetween(me.Position, enemy.Position) <= RifleRange * coefficient;
             case WeaponLootItem.WeaponType.Sniper:
-                return GetDistanceBetween(me.Position, enemy.Position) <= SniperRange;
+                return GetDistanceBetween(me.Position, enemy.Position) <= SniperRange * coefficient;
             case WeaponLootItem.WeaponType.None:
                 return false;
             default:
@@ -110,5 +113,35 @@ public static class Measurer
             default:
                 throw new ArgumentOutOfRangeException();
         }
+    }
+
+    public static bool IsClearVisible(MyUnit me, EnemyUnit enemy, List<Object> objects)
+    {
+        var distance = GetDistanceBetween(me.Position, enemy.Position);
+        var potentialCover = objects.Where(o => !o.IsBulletProof &&
+                                                GetDistanceBetween(me.Position, o.Position) <= distance * 1.15 &&
+                                                GetDistanceBetween(enemy.Position, o.Position) <= distance * 1.15);
+
+        var dpx = enemy.Position.X - me.Position.X;
+        var dpy = enemy.Position.Y - me.Position.Y;
+        var a = dpx * dpx + dpy * dpy;
+        foreach (var o in potentialCover)
+        {
+            var b = 2 * (dpx * (me.Position.X - o.Position.X) + dpy * (me.Position.Y - o.Position.Y));
+            var c = o.Position.X * o.Position.X + o.Position.Y * o.Position.Y;
+            c += me.Position.X * me.Position.X + me.Position.Y * me.Position.Y;
+            c -= 2 * (o.Position.X * me.Position.X + o.Position.Y * me.Position.Y);
+            c -= o.Radius * o.Radius;
+            var bb4ac = b * b - 4 * a * c;
+            if (Math.Abs(a) < float.Epsilon || bb4ac < 0)
+            {
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

@@ -15,6 +15,7 @@ namespace AiCup22
         private MyUnit Me => World.Me;
         private DebugInterface DebugInterface { get; set; }
         public Dictionary<int, UnitOrder> Command { get; set; }
+
         public MyStrategy(Constants constants)
         {
             World = new World(constants);
@@ -34,10 +35,11 @@ namespace AiCup22
 
         private void ChooseAction()
         {
-            // DebugInterface.Add(new DebugData.PlacedText(World.Me.Position, World.Me.Ammo.ToString(), new Vec2(), 5, CustomDebug.BlueColor));
+            // DebugInterface.Add(new DebugData.PlacedText(World.Me.Position, World.Me.Ammo.ToString(), new Vec2(), 5, CustomDebug.RedColor));
             // DebugInterface.Add(new DebugData.PlacedText(World.Me.Position, World.Me.Potions.ToString(), new Vec2(), 5, CustomDebug.VioletColor));
             // DebugInterface.Add(new DebugData.Ring(World.NearestRifleAmmoLoot.Position, 2, 2, CustomDebug.VioletColor));
             // DebugInterface.Add(new DebugData.Ring(World.NearestSniperAmmoLoot.Position, 2, 2, CustomDebug.VioletColor));
+            // DebugInterface.Add(new DebugData.PolyLine(new[] { new Vec2(50,100), new Vec2(0,50) }, 5, CustomDebug.GreenColor));
 
             ReturnInZone();
 
@@ -52,8 +54,7 @@ namespace AiCup22
             AttackEnemy();
 
             GoToTarget();
-            
-            }
+        }
 
         #region Behaviour
 
@@ -64,7 +65,7 @@ namespace AiCup22
                 return;
             }
 
-            Go(World.ZoneCenter);
+            Go(Measurer.GetZoneBorderPoint(Me, World.ZoneCenter, World.ZoneRadius));
         }
 
         private void AttackEnemy()
@@ -74,6 +75,7 @@ namespace AiCup22
                 return;
             }
 
+            // See anyone and have ammo
             if (!World.IsNearestEnemyVisible || Me.IsAmmoEmpty)
             {
                 return;
@@ -82,26 +84,28 @@ namespace AiCup22
             // More than one
             if (World.EnemyUnits.Count > 1)
             {
-                RunAwayFrom(World.NearestEnemy);
+                CameToAim(World.NearestWeakestEnemy);
+                // RunAwayFrom(World.NearestEnemy);
                 return;
             }
 
             // Can't hit
-            if (!Measurer.IsDistanceAllowToHit(Me, World.NearestEnemy))
+            if (!Measurer.IsDistanceAllowToHit(Me, World.NearestEnemy, 0.8))
             {
                 Go(World.NearestEnemy);
                 return;
             }
 
-            // Aim
-            if (!Me.IsAimed)
+            if (Measurer.IsClearVisible(Me, World.NearestEnemy, World.Objects) &&
+                Me.IsAimed)
             {
-                CameToAim(World.NearestEnemy);
+                // Shoot
+                CameToAim(World.NearestEnemy, true);
                 return;
             }
 
-            // Shoot
-            CameToAim(World.NearestEnemy, true);
+            // Aim
+            CameToAim(World.NearestEnemy);
         }
 
         private void ChangeWeapon()
@@ -173,6 +177,15 @@ namespace AiCup22
             // Can be hit
             if (World.IsNearestEnemyVisible && Measurer.IsHittableFromEnemy(Me, World.NearestEnemy))
             {
+                if (Measurer.IsClearVisible(Me, World.NearestEnemy, World.Objects) &&
+                    Me.IsAimed)
+                {
+                    // Shoot
+                    RunAwayFrom(World.NearestEnemy, true);
+                    return;
+                }
+
+                // Aim
                 RunAwayFrom(World.NearestEnemy);
                 return;
             }
@@ -193,7 +206,7 @@ namespace AiCup22
 
             if (World.OutOfZone)
             {
-                Go(World.ZoneCenter);
+                Go(Measurer.GetZoneBorderPoint(Me, World.ZoneCenter, World.ZoneRadius));
             }
         }
 
@@ -201,13 +214,11 @@ namespace AiCup22
 
         #region Actions
 
-        private void RunAwayFrom(CustomItem item, bool shotOut = true)
+        private void RunAwayFrom(CustomItem item, bool withShoot = false)
         {
             var targetVelocity = Measurer.GetTargetVelocityTo(Me.Position, item.Position, true);
             var targetDirection = Measurer.GetTargetDirectionTo(Me.Position, item.Position);
-            var actionAim = shotOut
-                                ? new ActionOrder.Aim(true)
-                                : null;
+            var actionAim = new ActionOrder.Aim(withShoot);
 
             Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(targetVelocity, targetDirection, actionAim) }, };
         }

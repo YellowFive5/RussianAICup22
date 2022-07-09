@@ -15,6 +15,7 @@ namespace AiCup22;
 public class World
 {
     public Constants Constants { get; }
+    public Game Game { get; set; }
 
     #region Zone
 
@@ -33,6 +34,8 @@ public class World
     public List<EnemyUnit> EnemyUnits { get; set; } = new();
     public EnemyUnit NearestEnemy => EnemyUnits.OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
     public bool IsNearestEnemyVisible => NearestEnemy != null;
+    public EnemyUnit NearestWeakestEnemy => EnemyUnits.OrderBy(e => e.Shield).FirstOrDefault();
+    // public EnemyUnit NearestRichestEnemy => EnemyUnits.OrderByDescending(e => EnemyUnits.Where() ).FirstOrDefault();
     public double NearestEnemyDistance => Measurer.GetDistanceBetween(Me.Position, NearestEnemy.Position);
     public EnemyUnit NearestPistolEnemy => EnemyUnits.Where(e => e.WeaponType == WeaponLootItem.WeaponType.Pistol).OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
     public bool IsNearestPistolEnemyVisible => NearestPistolEnemy != null;
@@ -138,6 +141,7 @@ public class World
 
     public void Scan(Game game)
     {
+        Game = game;
         ZoneCenter = game.Zone.CurrentCenter;
         ZoneRadius = game.Zone.CurrentRadius;
         ZoneNextCenter = game.Zone.NextCenter;
