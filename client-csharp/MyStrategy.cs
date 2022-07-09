@@ -304,7 +304,7 @@ namespace AiCup22
 
         #endregion
 
-        public void DebugUpdate(DebugInterface debugInterface)
+        public void DebugUpdate(int displayedTick, DebugInterface debugInterface)
         {
             debugInterface.Clear();
 

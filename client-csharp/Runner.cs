@@ -25,7 +25,7 @@ namespace AiCup22
             writer.Write(tokenData.Length);
             writer.Write(tokenData);
             writer.Write(1);
-            writer.Write(0);
+            writer.Write(1);
             writer.Write(1);
             writer.Flush();
         }
@@ -54,7 +54,7 @@ namespace AiCup22
                         myStrategy.Finish();
                         break;
                     case ServerMessage.DebugUpdate message:
-                        myStrategy.DebugUpdate(debugInterface);
+                        myStrategy.DebugUpdate(message.DisplayedTick, debugInterface);
                         new ClientMessage.DebugUpdateDone().WriteTo(writer);
                         writer.Flush();
                         break;
