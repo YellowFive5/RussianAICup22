@@ -86,9 +86,10 @@ namespace AiCup22
                 return;
             }
 
-            // Can be hit
-            if (World.IsNearestEnemyVisible && Measurer.IsHittableFromEnemy(Me, World.NearestEnemy))
+            // Under hit
+            if (World.IsNearestEnemyVisible && Measurer.IsDistanceAllowToHit(World.NearestEnemy, Me))
             {
+                // Can I hit
                 if (Measurer.IsClearVisible(Me, World.NearestEnemy, World.Objects) &&
                     Me.IsAimed &&
                     Measurer.IsDistanceAllowToHit(Me, World.NearestEnemy))
@@ -98,16 +99,22 @@ namespace AiCup22
                     return;
                 }
 
+                // Can heel not under fire
+                if (!Measurer.IsClearVisible(World.NearestEnemy, Me, World.Objects) ||
+                    !Measurer.IsDistanceAllowToHit(World.NearestEnemy, Me))
+                {
+                    // Heel
+                    TakePotionIfHave();
+                    return;
+                }
+
                 // Aim
                 RunAwayFrom(World.NearestEnemy);
                 return;
             }
 
             // Heel
-            if (!Me.IsPotionsEmpty)
-            {
-                TakePotion();
-            }
+            TakePotionIfHave();
         }
 
         private void TakePotions()
@@ -284,8 +291,13 @@ namespace AiCup22
             Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(targetVelocity, targetDirection, actionAim) }, };
         }
 
-        private void TakePotion()
+        private void TakePotionIfHave()
         {
+            if (Me.IsPotionsEmpty)
+            {
+                return;
+            }
+
             var actionUseShieldPotion = new ActionOrder.UseShieldPotion();
             Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(Measurer.GetRandomVec(), Measurer.GetRandomVec(), actionUseShieldPotion) }, };
         }

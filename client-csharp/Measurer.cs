@@ -13,9 +13,7 @@ namespace AiCup22;
 
 public static class Measurer
 {
-    public static readonly int[] WeaponRanges = { 24, 16, 36 };
-    public const double HitRangeCoefficientEnemy = 0.2;
-    public const double HitRangeCoefficientMy = 0.9;
+    public static readonly double[] WeaponRanges = { 24, 16, 36 };
     public const double InZonePointCoefficient = 0.1;
 
     public static double GetDistanceBetween(Vec2 a, Vec2 b)
@@ -45,14 +43,12 @@ public static class Measurer
     {
         return GetTargetDirectionTo(from.Position, to.Position);
         var distance = GetDistanceBetween(from.Position, to.Position);
-        var coefficient = distance /
-                          world.Constants.Weapons[(int)from.WeaponType].ProjectileSpeed *
-                          1.2;
+        var coefficient = world.Constants.Weapons[(int)from.WeaponType].ProjectileSpeed;
 
         return new Vec2
                {
-                   X = to.Position.X - from.Position.X + to.Unit.Velocity.X / coefficient * coefficient,
-                   Y = to.Position.Y - from.Position.Y + to.Unit.Velocity.Y / coefficient * coefficient
+                   X = to.Position.X - from.Position.X + to.Unit.Velocity.X + distance / coefficient * 0.6,
+                   Y = to.Position.Y - from.Position.Y + to.Unit.Velocity.Y + distance / coefficient * 0.6,
                };
     }
 
@@ -94,32 +90,27 @@ public static class Measurer
         return new Vec2 { X = aX, Y = aY };
     }
 
-    public static bool IsDistanceAllowToHit(MyUnit me, EnemyUnit enemy)
+    public static bool IsDistanceAllowToHit(CustomUnit from, CustomUnit to)
     {
-        return GetDistanceBetween(me.Position, enemy.Position) <= WeaponRanges[(int)me.WeaponType] * HitRangeCoefficientMy;
+        return GetDistanceBetween(from.Position, to.Position) <= WeaponRanges[(int)from.WeaponType];
     }
 
-    public static bool IsHittableFromEnemy(MyUnit me, EnemyUnit enemy)
+    public static bool IsClearVisible(CustomUnit from, CustomUnit to, IEnumerable<Object> objects)
     {
-        return GetDistanceBetween(me.Position, enemy.Position) <= WeaponRanges[(int)enemy.WeaponType] * (1 + HitRangeCoefficientEnemy);
-    }
-
-    public static bool IsClearVisible(MyUnit me, EnemyUnit enemy, List<Object> objects)
-    {
-        var distance = GetDistanceBetween(me.Position, enemy.Position);
+        var distance = GetDistanceBetween(from.Position, to.Position);
         var potentialCover = objects.Where(o => !o.IsBulletProof &&
-                                                GetDistanceBetween(me.Position, o.Position) <= distance * 1.15 &&
-                                                GetDistanceBetween(enemy.Position, o.Position) <= distance * 1.15);
+                                                GetDistanceBetween(from.Position, o.Position) <= distance * 1.15 &&
+                                                GetDistanceBetween(to.Position, o.Position) <= distance * 1.15);
 
-        var dpx = enemy.Position.X - me.Position.X;
-        var dpy = enemy.Position.Y - me.Position.Y;
+        var dpx = to.Position.X - from.Position.X;
+        var dpy = to.Position.Y - from.Position.Y;
         var a = dpx * dpx + dpy * dpy;
         foreach (var o in potentialCover)
         {
-            var b = 2 * (dpx * (me.Position.X - o.Position.X) + dpy * (me.Position.Y - o.Position.Y));
+            var b = 2 * (dpx * (from.Position.X - o.Position.X) + dpy * (from.Position.Y - o.Position.Y));
             var c = o.Position.X * o.Position.X + o.Position.Y * o.Position.Y;
-            c += me.Position.X * me.Position.X + me.Position.Y * me.Position.Y;
-            c -= 2 * (o.Position.X * me.Position.X + o.Position.Y * me.Position.Y);
+            c += from.Position.X * from.Position.X + from.Position.Y * from.Position.Y;
+            c -= 2 * (o.Position.X * from.Position.X + o.Position.Y * from.Position.Y);
             c -= o.Radius * o.Radius;
             var bb4ac = b * b - 4 * a * c;
             if (Math.Abs(a) < float.Epsilon || bb4ac < 0)
