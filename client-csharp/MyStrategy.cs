@@ -68,7 +68,7 @@ namespace AiCup22
                 return;
             }
 
-            if (World.OutOfZone)
+            if (World.NearToOutOfZone)
             {
                 Go(Measurer.GetZoneBorderPoint(Me, World.ZoneCenter, World.ZoneRadius));
             }

@@ -30,6 +30,7 @@ public class World
 
     public MyUnit Me => MyUnits.First(); // todo Round 1 only
     public bool OutOfZone { get; set; }
+    public bool NearToOutOfZone { get; set; }
     public List<MyUnit> MyUnits { get; set; } = new();
     public List<EnemyUnit> EnemyUnits { get; set; } = new();
     public EnemyUnit NearestEnemy => EnemyUnits.OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
@@ -169,6 +170,7 @@ public class World
         }
 
         OutOfZone = Measurer.GetDistanceBetween(ZoneCenter, Me.Position) >= game.Zone.CurrentRadius;
+        NearToOutOfZone = Measurer.GetDistanceBetween(ZoneCenter, Me.Position) >= game.Zone.CurrentRadius * 0.97;
         WeaponItems = new List<WeaponLootItem>();
         AmmoItems = new List<AmmoLootItem>();
         ShieldItems = new List<ShieldLootItem>();
