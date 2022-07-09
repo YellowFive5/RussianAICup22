@@ -1,6 +1,7 @@
 #region Usings
 
 using System.Collections.Generic;
+using System.Linq;
 using AiCup22.CustomModel;
 using AiCup22.Model;
 
@@ -13,7 +14,7 @@ namespace AiCup22
         private World World { get; }
         private MyUnit Me => World.Me;
         private DebugInterface DebugInterface { get; set; }
-
+        public Dictionary<int, UnitOrder> Command { get; set; }
         public MyStrategy(Constants constants)
         {
             World = new World(constants);
@@ -22,104 +23,185 @@ namespace AiCup22
         public Order GetOrder(Game game, DebugInterface debugInterface)
         {
             DebugInterface = debugInterface;
+            Command = new Dictionary<int, UnitOrder>();
 
             World.Scan(game);
 
-            return ChooseAction();
+            ChooseAction();
+
+            return new Order(Command);
         }
 
-        private Order ChooseAction()
+        private void ChooseAction()
         {
             // DebugInterface.Add(new DebugData.PlacedText(World.Me.Position, World.Me.Ammo.ToString(), new Vec2(), 5, CustomDebug.BlueColor));
             // DebugInterface.Add(new DebugData.PlacedText(World.Me.Position, World.Me.Potions.ToString(), new Vec2(), 5, CustomDebug.VioletColor));
             // DebugInterface.Add(new DebugData.Ring(World.NearestRifleAmmoLoot.Position, 2, 2, CustomDebug.VioletColor));
             // DebugInterface.Add(new DebugData.Ring(World.NearestSniperAmmoLoot.Position, 2, 2, CustomDebug.VioletColor));
 
-            // OutOfZone
-            if (World.OutOfZone)
-            {
-                return Go(World.ZoneCenter);
-            }
+            ReturnInZone();
 
-            // Need Heel
-            if (Me.IsShieldInjured)
-            {
-                // Can be hit
-                if (World.IsNearestEnemyVisible && Measurer.IsHittableFromEnemy(Me, World.NearestEnemy))
-                {
-                    return RunAwayFrom(World.NearestEnemy);
-                }
+            GoHeel();
 
-                // Heel
-                if (!Me.IsPotionsEmpty)
-                {
-                    return TakePotion();
-                }
-            }
+            TakePotions();
 
-            // Need take shield
-            if (Me.IsPotionsUnderHalf && World.IsNearestShieldLootItemVisible)
-            {
-                return GoPickup(World.NearestShieldLootItem);
-            }
+            TakeAmmo();
+
+            ChangeWeapon();
+
+            AttackEnemy();
+
+            GoToTarget();
             
-            // Need take ammo
-            if (Me.IsOutOfAmmo && World.IsNearestActiveAmmoVisible())
-            {
-                return GoPickup(World.GetNearestActiveAmmoLoot());
             }
 
-            // Change weapon
+        #region Behaviour
+
+        private void GoToTarget()
+        {
+            if (Command.Any())
+            {
+                return;
+            }
+
+            Go(World.ZoneCenter);
+        }
+
+        private void AttackEnemy()
+        {
+            if (Command.Any())
+            {
+                return;
+            }
+
+            if (!World.IsNearestEnemyVisible || Me.IsAmmoEmpty)
+            {
+                return;
+            }
+
+            // More than one
+            if (World.EnemyUnits.Count > 1)
+            {
+                RunAwayFrom(World.NearestEnemy);
+                return;
+            }
+
+            // Can't hit
+            if (!Measurer.IsDistanceAllowToHit(Me, World.NearestEnemy))
+            {
+                Go(World.NearestEnemy);
+                return;
+            }
+
+            // Aim
+            if (!Me.IsAimed)
+            {
+                CameToAim(World.NearestEnemy);
+                return;
+            }
+
+            // Shoot
+            CameToAim(World.NearestEnemy, true);
+        }
+
+        private void ChangeWeapon()
+        {
+            if (Command.Any())
+            {
+                return;
+            }
+
             if (Me.WeaponType == WeaponLootItem.WeaponType.Pistol)
             {
                 if (World.IsNearestSniperVisible)
                 {
-                    return GoPickup(World.NearestSniper);
+                    GoPickup(World.NearestSniper);
+                    return;
                 }
 
                 if (World.IsNearestRifleVisible)
                 {
-                    return GoPickup(World.NearestRifle);
+                    GoPickup(World.NearestRifle);
+                    return;
                 }
             }
 
             if (Me.WeaponType == WeaponLootItem.WeaponType.Rifle && World.IsNearestSniperVisible)
             {
-                return GoPickup(World.NearestSniper);
+                GoPickup(World.NearestSniper);
             }
-            
-            // See enemy
-            if (World.IsNearestEnemyVisible && !Me.IsAmmoEmpty)
-            {
-                // More than one
-                if (World.EnemyUnits.Count > 1)
-                {
-                    return RunAwayFrom(World.NearestEnemy);
-                }
-
-                // Can't hit
-                if (!Measurer.IsDistanceAllowToHit(Me, World.NearestEnemy))
-                {
-                    return Go(World.NearestEnemy);
-                }
-
-                // Aim
-                if (!Me.IsAimed)
-                {
-                    return CameToAim(World.NearestEnemy);
-                }
-
-                // Shoot
-                return CameToAim(World.NearestEnemy, true);
-            }
-
-            // return Go(Measurer.GetZoneBorderPoint(Me, World.ZoneCenter, World.ZoneRadius));
-            return Go(World.ZoneCenter);
         }
+
+        private void TakeAmmo()
+        {
+            if (Command.Any())
+            {
+                return;
+            }
+
+            if (Me.IsOutOfAmmo && World.IsNearestActiveAmmoVisible())
+            {
+                GoPickup(World.GetNearestActiveAmmoLoot());
+            }
+        }
+
+        private void TakePotions()
+        {
+            if (Command.Any())
+            {
+                return;
+            }
+
+            if (Me.IsPotionsUnderHalf && World.IsNearestShieldLootItemVisible)
+            {
+                GoPickup(World.NearestShieldLootItem);
+            }
+        }
+
+        private void GoHeel()
+        {
+            if (Command.Any())
+            {
+                return;
+            }
+
+            if (!Me.IsShieldInjured)
+            {
+                return;
+            }
+
+            // Can be hit
+            if (World.IsNearestEnemyVisible && Measurer.IsHittableFromEnemy(Me, World.NearestEnemy))
+            {
+                RunAwayFrom(World.NearestEnemy);
+                return;
+            }
+
+            // Heel
+            if (!Me.IsPotionsEmpty)
+            {
+                TakePotion();
+            }
+        }
+
+        private void ReturnInZone()
+        {
+            if (Command.Any())
+            {
+                return;
+            }
+
+            if (World.OutOfZone)
+            {
+                Go(World.ZoneCenter);
+            }
+        }
+
+        #endregion
 
         #region Actions
 
-        private Order RunAwayFrom(CustomItem item, bool shotOut = true)
+        private void RunAwayFrom(CustomItem item, bool shotOut = true)
         {
             var targetVelocity = Measurer.GetTargetVelocityTo(Me.Position, item.Position, true);
             var targetDirection = Measurer.GetTargetDirectionTo(Me.Position, item.Position);
@@ -127,55 +209,43 @@ namespace AiCup22
                                 ? new ActionOrder.Aim(true)
                                 : null;
 
-            var myCommand = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(targetVelocity, targetDirection, actionAim) }, };
-
-            return new Order(myCommand);
+            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(targetVelocity, targetDirection, actionAim) }, };
         }
 
-        private Order GoPickup(CustomItem item)
+        private void GoPickup(CustomItem item)
         {
             var targetVelocity = Measurer.GetTargetVelocityTo(Me.Position, item.Position);
             var targetDirection = Measurer.GetTargetDirectionTo(Me.Position, item.Position);
             var actionPickup = new ActionOrder.Pickup(item.Id);
-            var myCommand = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(targetVelocity, targetDirection, actionPickup) }, };
-
-            return new Order(myCommand);
+            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(targetVelocity, targetDirection, actionPickup) }, };
         }
 
-        private Order Go(CustomItem item)
+        private void Go(CustomItem item)
         {
             var targetVelocity = Measurer.GetTargetVelocityTo(Me.Position, item.Position);
             var targetDirection = Measurer.GetTargetDirectionTo(Me.Position, item.Position);
-            var myCommand = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(targetVelocity, targetDirection, null) }, };
-
-            return new Order(myCommand);
+            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(targetVelocity, targetDirection, null) }, };
         }
 
-        private Order Go(Vec2 item)
+        private void Go(Vec2 item)
         {
             var targetVelocity = Measurer.GetTargetVelocityTo(Me.Position, item);
             var targetDirection = Measurer.GetTargetDirectionTo(Me.Position, item);
-            var myCommand = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(targetVelocity, targetDirection, null) }, };
-
-            return new Order(myCommand);
+            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(targetVelocity, targetDirection, null) }, };
         }
 
-        private Order CameToAim(CustomItem item, bool withShot = false)
+        private void CameToAim(CustomItem item, bool withShot = false)
         {
             var targetVelocity = Measurer.GetRandomVec();
             var targetDirection = Measurer.GetTargetDirectionTo(Me.Position, item.Position);
             var actionAim = new ActionOrder.Aim(withShot);
-            var myCommand = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(targetVelocity, targetDirection, actionAim) }, };
-
-            return new Order(myCommand);
+            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(targetVelocity, targetDirection, actionAim) }, };
         }
 
-        private Order TakePotion()
+        private void TakePotion()
         {
             var actionUseShieldPotion = new ActionOrder.UseShieldPotion();
-            var myCommand = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(Measurer.GetRandomVec(), Measurer.GetRandomVec(), actionUseShieldPotion) }, };
-
-            return new Order(myCommand);
+            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(Measurer.GetRandomVec(), Measurer.GetRandomVec(), actionUseShieldPotion) }, };
         }
 
         #endregion
