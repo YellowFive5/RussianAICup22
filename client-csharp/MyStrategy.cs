@@ -156,13 +156,14 @@ namespace AiCup22
                 return;
             }
 
-            // More than one // todo seems bad to use
-            // if (World.EnemyUnits.Count > 1)
-            // {
-            //     ComeToAim(World.NearestWeakestEnemy);
-            //     // RunAwayFrom(World.NearestEnemy);
-            //     return;
-            // }
+            // Be afraid of sniper when no sniper
+            if (World.IsNearestEnemyVisible &&
+                World.NearestEnemy.WeaponType is WeaponLootItem.WeaponType.Sniper &&
+                Me.WeaponType is not WeaponLootItem.WeaponType.Sniper)
+            {
+                RunAwayFrom(World.NearestEnemy);
+                return;
+            }
 
             // Can't hit
             if (!Measurer.IsDistanceAllowToHit(Me, World.NearestEnemy))
