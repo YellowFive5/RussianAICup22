@@ -13,11 +13,9 @@ namespace AiCup22;
 
 public static class Measurer
 {
-    public const double PistolRange = 24;
-    public const double RifleRange = 16;
-    public const double SniperRange = 36;
-
-    public const double HitRangeCoefficient = 0.2;
+    public static readonly int[] WeaponRanges = { 24, 16, 36 };
+    public const double HitRangeCoefficientEnemy = 0.2;
+    public const double HitRangeCoefficientMy = 0.9;
     public const double InZonePointCoefficient = 0.1;
 
     public static double GetDistanceBetween(Vec2 a, Vec2 b)
@@ -40,6 +38,21 @@ public static class Measurer
                {
                    X = to.X - from.X,
                    Y = to.Y - from.Y
+               };
+    }
+
+    public static Vec2 GetAdvancedTargetDirectionTo(CustomUnit from, CustomUnit to, World world)
+    {
+        return GetTargetDirectionTo(from.Position, to.Position);
+        var distance = GetDistanceBetween(from.Position, to.Position);
+        var coefficient = distance /
+                          world.Constants.Weapons[(int)from.WeaponType].ProjectileSpeed *
+                          1.2;
+
+        return new Vec2
+               {
+                   X = to.Position.X - from.Position.X + to.Unit.Velocity.X / coefficient * coefficient,
+                   Y = to.Position.Y - from.Position.Y + to.Unit.Velocity.Y / coefficient * coefficient
                };
     }
 
@@ -81,38 +94,14 @@ public static class Measurer
         return new Vec2 { X = aX, Y = aY };
     }
 
-    public static bool IsDistanceAllowToHit(MyUnit me, EnemyUnit enemy, double coefficient = 1)
+    public static bool IsDistanceAllowToHit(MyUnit me, EnemyUnit enemy)
     {
-        switch (me.WeaponType)
-        {
-            case WeaponLootItem.WeaponType.Pistol:
-                return GetDistanceBetween(me.Position, enemy.Position) <= PistolRange * coefficient;
-            case WeaponLootItem.WeaponType.Rifle:
-                return GetDistanceBetween(me.Position, enemy.Position) <= RifleRange * coefficient;
-            case WeaponLootItem.WeaponType.Sniper:
-                return GetDistanceBetween(me.Position, enemy.Position) <= SniperRange * coefficient;
-            case WeaponLootItem.WeaponType.None:
-                return false;
-            default:
-                throw new ArgumentOutOfRangeException();
-        }
+        return GetDistanceBetween(me.Position, enemy.Position) <= WeaponRanges[(int)me.WeaponType] * HitRangeCoefficientMy;
     }
 
     public static bool IsHittableFromEnemy(MyUnit me, EnemyUnit enemy)
     {
-        switch (enemy.WeaponType)
-        {
-            case WeaponLootItem.WeaponType.Pistol:
-                return GetDistanceBetween(me.Position, enemy.Position) <= PistolRange * (1 + HitRangeCoefficient);
-            case WeaponLootItem.WeaponType.Rifle:
-                return GetDistanceBetween(me.Position, enemy.Position) <= RifleRange * (1 + HitRangeCoefficient);
-            case WeaponLootItem.WeaponType.Sniper:
-                return GetDistanceBetween(me.Position, enemy.Position) <= SniperRange * (1 + HitRangeCoefficient);
-            case WeaponLootItem.WeaponType.None:
-                return false;
-            default:
-                throw new ArgumentOutOfRangeException();
-        }
+        return GetDistanceBetween(me.Position, enemy.Position) <= WeaponRanges[(int)enemy.WeaponType] * (1 + HitRangeCoefficientEnemy);
     }
 
     public static bool IsClearVisible(MyUnit me, EnemyUnit enemy, List<Object> objects)

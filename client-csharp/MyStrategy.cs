@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using AiCup22.CustomModel;
+using AiCup22.Debugging;
 using AiCup22.Model;
 
 #endregion
@@ -15,6 +16,8 @@ namespace AiCup22
         private MyUnit Me => World.Me;
         private DebugInterface DebugInterface { get; set; }
         public Dictionary<int, UnitOrder> Command { get; set; }
+
+        private readonly bool debugPrint = false;
 
         public MyStrategy(Constants constants)
         {
@@ -49,23 +52,88 @@ namespace AiCup22
 
             TakeAmmo();
 
-            ChangeWeapon();
-
             AttackEnemy();
+
+            ChangeWeapon();
 
             GoToTarget();
         }
 
         #region Behaviour
 
-        private void GoToTarget()
+        private void ReturnInZone()
         {
             if (Command.Any())
             {
                 return;
             }
 
-            Go(Measurer.GetZoneBorderPoint(Me, World.ZoneCenter, World.ZoneRadius));
+            if (World.OutOfZone)
+            {
+                Go(Measurer.GetZoneBorderPoint(Me, World.ZoneCenter, World.ZoneRadius));
+            }
+        }
+
+        private void GoHeel()
+        {
+            if (Command.Any())
+            {
+                return;
+            }
+
+            if (!Me.IsShieldInjured)
+            {
+                return;
+            }
+
+            // Can be hit
+            if (World.IsNearestEnemyVisible && Measurer.IsHittableFromEnemy(Me, World.NearestEnemy))
+            {
+                if (Measurer.IsClearVisible(Me, World.NearestEnemy, World.Objects) &&
+                    Me.IsAimed &&
+                    Measurer.IsDistanceAllowToHit(Me, World.NearestEnemy))
+                {
+                    // Shoot
+                    RunAwayFrom(World.NearestEnemy, true);
+                    return;
+                }
+
+                // Aim
+                RunAwayFrom(World.NearestEnemy);
+                return;
+            }
+
+            // Heel
+            if (!Me.IsPotionsEmpty)
+            {
+                TakePotion();
+            }
+        }
+
+        private void TakePotions()
+        {
+            if (Command.Any())
+            {
+                return;
+            }
+
+            if (Me.IsPotionsUnderHalf && World.IsNearestShieldLootItemVisible)
+            {
+                GoPickup(World.NearestShieldLootItem);
+            }
+        }
+
+        private void TakeAmmo()
+        {
+            if (Command.Any())
+            {
+                return;
+            }
+
+            if (Me.IsOutOfAmmo && World.IsNearestActiveAmmoVisible())
+            {
+                GoPickup(World.GetNearestActiveAmmoLoot());
+            }
         }
 
         private void AttackEnemy()
@@ -81,16 +149,16 @@ namespace AiCup22
                 return;
             }
 
-            // More than one
-            if (World.EnemyUnits.Count > 1)
-            {
-                CameToAim(World.NearestWeakestEnemy);
-                // RunAwayFrom(World.NearestEnemy);
-                return;
-            }
+            // More than one // todo seems bad to use
+            // if (World.EnemyUnits.Count > 1)
+            // {
+            //     ComeToAim(World.NearestWeakestEnemy);
+            //     // RunAwayFrom(World.NearestEnemy);
+            //     return;
+            // }
 
             // Can't hit
-            if (!Measurer.IsDistanceAllowToHit(Me, World.NearestEnemy, 0.8))
+            if (!Measurer.IsDistanceAllowToHit(Me, World.NearestEnemy))
             {
                 Go(World.NearestEnemy);
                 return;
@@ -100,12 +168,12 @@ namespace AiCup22
                 Me.IsAimed)
             {
                 // Shoot
-                CameToAim(World.NearestEnemy, true);
+                ComeToAim(World.NearestEnemy, true);
                 return;
             }
 
             // Aim
-            CameToAim(World.NearestEnemy);
+            ComeToAim(World.NearestEnemy);
         }
 
         private void ChangeWeapon()
@@ -136,88 +204,38 @@ namespace AiCup22
             }
         }
 
-        private void TakeAmmo()
+        private void GoToTarget()
         {
             if (Command.Any())
             {
                 return;
             }
 
-            if (Me.IsOutOfAmmo && World.IsNearestActiveAmmoVisible())
-            {
-                GoPickup(World.GetNearestActiveAmmoLoot());
-            }
-        }
-
-        private void TakePotions()
-        {
-            if (Command.Any())
-            {
-                return;
-            }
-
-            if (Me.IsPotionsUnderHalf && World.IsNearestShieldLootItemVisible)
-            {
-                GoPickup(World.NearestShieldLootItem);
-            }
-        }
-
-        private void GoHeel()
-        {
-            if (Command.Any())
-            {
-                return;
-            }
-
-            if (!Me.IsShieldInjured)
-            {
-                return;
-            }
-
-            // Can be hit
-            if (World.IsNearestEnemyVisible && Measurer.IsHittableFromEnemy(Me, World.NearestEnemy))
-            {
-                if (Measurer.IsClearVisible(Me, World.NearestEnemy, World.Objects) &&
-                    Me.IsAimed)
-                {
-                    // Shoot
-                    RunAwayFrom(World.NearestEnemy, true);
-                    return;
-                }
-
-                // Aim
-                RunAwayFrom(World.NearestEnemy);
-                return;
-            }
-
-            // Heel
-            if (!Me.IsPotionsEmpty)
-            {
-                TakePotion();
-            }
-        }
-
-        private void ReturnInZone()
-        {
-            if (Command.Any())
-            {
-                return;
-            }
-
-            if (World.OutOfZone)
-            {
-                Go(Measurer.GetZoneBorderPoint(Me, World.ZoneCenter, World.ZoneRadius));
-            }
+            Go(Measurer.GetZoneBorderPoint(Me, World.ZoneCenter, World.ZoneRadius));
         }
 
         #endregion
 
         #region Actions
 
-        private void RunAwayFrom(CustomItem item, bool withShoot = false)
+        private void RunAwayFrom(CustomUnit unit, bool withShoot = false)
         {
-            var targetVelocity = Measurer.GetTargetVelocityTo(Me.Position, item.Position, true);
-            var targetDirection = Measurer.GetTargetDirectionTo(Me.Position, item.Position);
+            var targetVelocity = Measurer.GetTargetVelocityTo(Me.Position, unit.Position, true);
+            var targetDirection = Measurer.GetAdvancedTargetDirectionTo(Me, unit, World);
+
+            if (debugPrint)
+            {
+                DebugInterface.Add(new DebugData.PolyLine(new[]
+                                                          {
+                                                              Me.Position,
+                                                              new Vec2(targetDirection.X + Me.Position.X,
+                                                                       targetDirection.Y + Me.Position.Y)
+                                                          },
+                                                          0.3,
+                                                          CustomDebug.VioletColor));
+            }
+
+
             var actionAim = new ActionOrder.Aim(withShoot);
 
             Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(targetVelocity, targetDirection, actionAim) }, };
@@ -245,10 +263,23 @@ namespace AiCup22
             Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(targetVelocity, targetDirection, null) }, };
         }
 
-        private void CameToAim(CustomItem item, bool withShot = false)
+        private void ComeToAim(CustomUnit unit, bool withShot = false)
         {
             var targetVelocity = Measurer.GetRandomVec();
-            var targetDirection = Measurer.GetTargetDirectionTo(Me.Position, item.Position);
+            var targetDirection = Measurer.GetAdvancedTargetDirectionTo(Me, unit, World);
+
+            if (debugPrint)
+            {
+                DebugInterface.Add(new DebugData.PolyLine(new[]
+                                                          {
+                                                              Me.Position,
+                                                              new Vec2(targetDirection.X + Me.Position.X,
+                                                                       targetDirection.Y + Me.Position.Y)
+                                                          },
+                                                          0.3,
+                                                          CustomDebug.VioletColor));
+            }
+
             var actionAim = new ActionOrder.Aim(withShot);
             Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(targetVelocity, targetDirection, actionAim) }, };
         }
