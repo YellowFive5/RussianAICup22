@@ -184,12 +184,22 @@ namespace AiCup22
                 return;
             }
 
-            // Be afraid of sniper when no sniper
-            if (World.IsNearestEnemyVisible &&
-                World.NearestEnemy.WeaponType is WeaponLootItem.WeaponType.Sniper &&
-                Me.WeaponType is not WeaponLootItem.WeaponType.Sniper)
+            // Be afraid of sniper when no sniper // todo test
+            if (Me.WeaponType is not WeaponLootItem.WeaponType.Sniper &&
+                World.IsNearestSniperEnemyVisible &&
+                Measurer.IsDistanceAllowToHit(World.NearestSniperEnemy, Me, 1.1) &&
+                Measurer.IsClearVisible(Me, World.NearestEnemy))
             {
-                RunAwayFrom(World.NearestEnemy);
+                // Can I hit
+                if (Me.IsAimed)
+                {
+                    // Shoot
+                    RunAwayFrom(World.NearestSniperEnemy, true);
+                    return;
+                }
+
+                // Aim
+                RunAwayFrom(World.NearestSniperEnemy);
                 return;
             }
 
@@ -204,7 +214,7 @@ namespace AiCup22
                 Me.IsAimed)
             {
                 // Shoot
-                ComeToAim(World.NearestEnemy, true);
+                ComeToAim(World.NearestEnemy, true, true);
                 return;
             }
 
@@ -286,9 +296,9 @@ namespace AiCup22
             Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(movement.velocity, movement.direction, null) }, };
         }
 
-        private void ComeToAim(CustomUnit unit, bool withShot = false)
+        private void ComeToAim(CustomItem unit, bool withShot = false, bool inverted = false)
         {
-            var movement = Measurer.GetSmartMovement(Me, unit.Position);
+            var movement = Measurer.GetSmartMovement(Me, unit.Position, inverted);
 
             // if (debugPrint) //todo debug smartaim
             // {
@@ -314,7 +324,7 @@ namespace AiCup22
             }
 
             var actionUseShieldPotion = new ActionOrder.UseShieldPotion();
-            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(Measurer.GetRandomVec(), Me.Unit.Direction, actionUseShieldPotion) }, };
+            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(Me.Unit.Velocity, Me.Unit.Direction, actionUseShieldPotion) }, };
         }
 
         #endregion
