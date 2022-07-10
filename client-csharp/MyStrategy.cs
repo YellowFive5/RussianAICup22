@@ -49,16 +49,34 @@ namespace AiCup22
             ReturnInZone();
 
             Heel();
-            
+
+            ProcessItems();
+
+            AttackEnemy();
+
+            GoToTarget();
+        }
+
+        private void ProcessItems()
+        {
+            // if (Me.IsPotionsEmpty)
+            // {
+            //     CollectPotions();
+            //     return;
+            // }
+            //
+            // if (Me.IsAmmoEmpty)
+            // {
+            //     CollectAmmo();
+            //     return;
+            // }
+
+            // NormalOrder
             CollectPotions();
 
             CollectAmmo();
 
             ChangeWeapon();
-
-            AttackEnemy();
-
-            GoToTarget();
         }
 
         #region Behaviour
@@ -141,8 +159,8 @@ namespace AiCup22
 
             if (Me.NeedToCollectPotions &&
                 World.IsNearestShieldLootItemVisible &&
-                !Measurer.IsDistanceAllowToHit(World.NearestEnemy, Me) &&
-                !Measurer.IsClearVisible(World.NearestEnemy, Me))
+                (!Measurer.IsDistanceAllowToHit(World.NearestEnemy, Me) ||
+                 !Measurer.IsClearVisible(World.NearestEnemy, Me)))
             {
                 GoPickup(World.NearestShieldLootItem);
             }
@@ -163,8 +181,8 @@ namespace AiCup22
 
             if (Me.NeedToCollectAmmo &&
                 World.IsNearestActiveAmmoVisible() &&
-                !Measurer.IsDistanceAllowToHit(World.NearestEnemy, Me) &&
-                !Measurer.IsClearVisible(World.NearestEnemy, Me)
+                (!Measurer.IsDistanceAllowToHit(World.NearestEnemy, Me) ||
+                 !Measurer.IsClearVisible(World.NearestEnemy, Me))
                )
             {
                 GoPickup(World.GetNearestActiveAmmoLoot());
