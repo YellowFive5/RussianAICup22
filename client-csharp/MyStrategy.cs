@@ -17,7 +17,7 @@ namespace AiCup22
         private DebugInterface DebugInterface { get; set; }
         public Dictionary<int, UnitOrder> Command { get; set; }
 
-        private readonly bool debugPrint = true;
+        private readonly bool debugPrint = false;
 
         public MyStrategy(Constants constants)
         {
@@ -48,15 +48,15 @@ namespace AiCup22
 
             ReturnInZone();
 
-            GoHeel();
+            Heel();
 
-            TakePotions();
+            CollectPotions();
 
-            TakeAmmo();
-
-            AttackEnemy();
+            CollectAmmo();
 
             ChangeWeapon();
+
+            AttackEnemy();
 
             GoToTarget();
         }
@@ -76,70 +76,96 @@ namespace AiCup22
             }
         }
 
-        private void GoHeel()
+        private void Heel()
         {
             if (Command.Any())
             {
                 return;
             }
 
-            if (!Me.IsShieldInjured)
+            if (Me.IsShieldInjured)
             {
-                return;
-            }
-
-            // Under hit
-            if (World.IsNearestEnemyVisible && Measurer.IsDistanceAllowToHit(World.NearestEnemy, Me))
-            {
-                // Can I hit
-                if (Measurer.IsClearVisible(Me, World.NearestEnemy, World.Objects) &&
-                    Me.IsAimed &&
-                    Measurer.IsDistanceAllowToHit(Me, World.NearestEnemy))
+                // Under potential hit
+                if (Measurer.IsDistanceAllowToHit(World.NearestEnemy, Me, 0.75))
                 {
-                    // Shoot
-                    RunAwayFrom(World.NearestEnemy, true);
+                    // Covered
+                    if (!Measurer.IsClearVisible(World.NearestEnemy, Me))
+                    {
+                        // Heel
+                        TakePotionIfHave();
+                        return;
+                    }
+
+                    // Can I hit
+                    if (Measurer.IsClearVisible(Me, World.NearestEnemy) &&
+                        Me.IsAimed &&
+                        Measurer.IsDistanceAllowToHit(Me, World.NearestEnemy))
+                    {
+                        // Shoot
+                        RunAwayFrom(World.NearestEnemy, true);
+                        return;
+                    }
+
+                    // Aim
+                    RunAwayFrom(World.NearestEnemy);
                     return;
                 }
 
-                // Can heel not under fire
-                if (!Measurer.IsClearVisible(World.NearestEnemy, Me, World.Objects) ||
-                    !Measurer.IsDistanceAllowToHit(World.NearestEnemy, Me))
+                // Heel
+                TakePotionIfHave();
+                return;
+            }
+
+            if (Me.IsShieldDamaged)
+            {
+                if (!Measurer.IsDistanceAllowToHit(World.NearestEnemy, Me, 0.5))
                 {
-                    // Heel
                     TakePotionIfHave();
-                    return;
                 }
-
-                // Aim
-                RunAwayFrom(World.NearestEnemy);
-                return;
             }
-
-            // Heel
-            TakePotionIfHave();
         }
 
-        private void TakePotions()
+        private void CollectPotions()
         {
             if (Command.Any())
             {
                 return;
             }
 
-            if (Me.IsPotionsUnderHalf && World.IsNearestShieldLootItemVisible)
+            if (Me.IsPotionsEmpty &&
+                World.IsNearestShieldLootItemVisible)
+            {
+                GoPickup(World.NearestShieldLootItem);
+                return;
+            }
+
+            if (Me.NeedToCollectPotions &&
+                World.IsNearestShieldLootItemVisible &&
+                !Measurer.IsDistanceAllowToHit(World.NearestEnemy, Me) &&
+                !Measurer.IsClearVisible(World.NearestEnemy, Me))
             {
                 GoPickup(World.NearestShieldLootItem);
             }
         }
 
-        private void TakeAmmo()
+        private void CollectAmmo()
         {
             if (Command.Any())
             {
                 return;
             }
 
-            if (Me.IsOutOfAmmo && World.IsNearestActiveAmmoVisible())
+            if (Me.IsAmmoEmpty && World.IsNearestActiveAmmoVisible())
+            {
+                GoPickup(World.GetNearestActiveAmmoLoot());
+                return;
+            }
+
+            if (Me.NeedToCollectAmmo &&
+                World.IsNearestActiveAmmoVisible() &&
+                !Measurer.IsDistanceAllowToHit(World.NearestEnemy, Me) &&
+                !Measurer.IsClearVisible(World.NearestEnemy, Me)
+               )
             {
                 GoPickup(World.GetNearestActiveAmmoLoot());
             }
@@ -167,14 +193,14 @@ namespace AiCup22
                 return;
             }
 
-            // Can't hit
+            // I can't hit
             if (!Measurer.IsDistanceAllowToHit(Me, World.NearestEnemy))
             {
                 Go(World.NearestEnemy);
                 return;
             }
 
-            if (Measurer.IsClearVisible(Me, World.NearestEnemy, World.Objects) &&
+            if (Measurer.IsClearVisible(Me, World.NearestEnemy) &&
                 Me.IsAimed)
             {
                 // Shoot
@@ -189,6 +215,12 @@ namespace AiCup22
         private void ChangeWeapon()
         {
             if (Command.Any())
+            {
+                return;
+            }
+
+            if (Measurer.IsDistanceAllowToHit(World.NearestEnemy, Me, 0.9) &&
+                Measurer.IsClearVisible(World.NearestEnemy, Me))
             {
                 return;
             }
@@ -256,7 +288,6 @@ namespace AiCup22
 
         private void ComeToAim(CustomUnit unit, bool withShot = false)
         {
-            var targetVelocity = Measurer.GetRandomVec();
             var movement = Measurer.GetSmartMovement(Me, unit.Position);
 
             // if (debugPrint) //todo debug smartaim

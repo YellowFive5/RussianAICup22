@@ -1,12 +1,10 @@
 ﻿#region Usings
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using AiCup22.CustomModel;
 using AiCup22.Debugging;
 using AiCup22.Model;
-using Object = AiCup22.CustomModel.Object;
 
 #endregion
 
@@ -54,10 +52,10 @@ public class Measurer
         var collisionRadius = nearestObject.Radius + UnitRadius * 1.5;
         var collisioned = GetDistanceBetween(from.Position, nearestObject.Position) <= collisionRadius;
 
-        if (collisioned)
-        {
-            DebugInterface.Add(new DebugData.Ring(nearestObject.Position, collisionRadius, 0.3, CustomDebug.BlueColor));
-        }
+        // if (collisioned)
+        // {
+        //     DebugInterface.Add(new DebugData.Ring(nearestObject.Position, collisionRadius, 0.3, CustomDebug.BlueColor));
+        // }
 
         var invertCoefficient = invertedVelocity && !collisioned
                                     ? -1
@@ -104,17 +102,27 @@ public class Measurer
         return new Vec2 { X = aX, Y = aY };
     }
 
-    public bool IsDistanceAllowToHit(CustomUnit from, CustomUnit to)
+    public bool IsDistanceAllowToHit(CustomUnit from, CustomUnit to, double coefficient = 1.0)
     {
-        return GetDistanceBetween(from.Position, to.Position) <= WeaponRanges[(int)from.WeaponType];
+        if (from == null || to == null)
+        {
+            return false;
+        }
+
+        return GetDistanceBetween(from.Position, to.Position) <= WeaponRanges[(int)from.WeaponType] * coefficient;
     }
 
-    public bool IsClearVisible(CustomUnit from, CustomUnit to, IEnumerable<Object> objects)
+    public bool IsClearVisible(CustomUnit from, CustomUnit to)
     {
+        if (from == null || to == null)
+        {
+            return false;
+        }
+
         var distance = GetDistanceBetween(from.Position, to.Position);
-        var potentialCover = objects.Where(o => !o.IsBulletProof &&
-                                                GetDistanceBetween(from.Position, o.Position) <= distance * 1.15 &&
-                                                GetDistanceBetween(to.Position, o.Position) <= distance * 1.15);
+        var potentialCover = World.Objects.Where(o => !o.IsBulletProof &&
+                                                      GetDistanceBetween(from.Position, o.Position) <= distance * 1.15 &&
+                                                      GetDistanceBetween(to.Position, o.Position) <= distance * 1.15);
 
         var dpx = to.Position.X - from.Position.X;
         var dpy = to.Position.Y - from.Position.Y;
