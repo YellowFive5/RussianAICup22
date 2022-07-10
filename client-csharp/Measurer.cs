@@ -2,6 +2,7 @@
 
 using System;
 using System.Linq;
+using System.Numerics;
 using AiCup22.CustomModel;
 using AiCup22.Model;
 
@@ -28,19 +29,74 @@ public class Measurer
         return Math.Sqrt(Math.Pow(a.X - b.X, 2) + Math.Pow(a.Y - b.Y, 2));
     }
 
+    public (Vec2 direction, Vec2 velocity) GetAdvancedTargetDirectionTo(CustomUnit from, CustomUnit to,
+                                                                        bool invertedVelocity = false)
+    {
+        // var invertCoefficient = invertedVelocity && !collisioned
+        var invertCoefficient = invertedVelocity
+                                    ? -1
+                                    : 1;
 
-    // public Vec2 GetAdvancedTargetDirectionTo(CustomUnit from, CustomUnit to, World world)
-    // {
-    //     return GetTargetDirectionTo(from.Position, to.Position, world, debugInterface); // todo
-    //     var distance = GetDistanceBetween(from.Position, to.Position);
-    //     var coefficient = world.Constants.Weapons[(int)from.WeaponType].ProjectileSpeed;
-    //
-    //     return new Vec2
-    //            {
-    //                X = to.Position.X - from.Position.X + to.Unit.Velocity.X + distance / coefficient * 0.6,
-    //                Y = to.Position.Y - from.Position.Y + to.Unit.Velocity.Y + distance / coefficient * 0.6,
-    //            };
-    // }
+        var vectorFrom = new Vector2((float)from.Position.X, (float)from.Position.Y);
+        var vectorTo = new Vector2((float)to.Position.X, (float)to.Position.Y);
+        var vectorToVelocity = new Vector2((float)to.Unit.Velocity.X, (float)to.Unit.Velocity.Y);
+
+        var totarget = vectorTo - vectorFrom;
+
+        // var angle = (float)Math.Atan2(to.Position.Y - from.Position.Y, to.Position.X - from.Position.X);
+        // var velocity = new Vector2
+        //                {
+        //                    X = (float)(vectorTo.X - vectorFrom.X + Math.Cos(angle) * World.Constants.Weapons[(int)from.WeaponType].ProjectileSpeed),
+        //                    Y = (float)(vectorTo.Y - vectorFrom.Y + Math.Sin(angle) * World.Constants.Weapons[(int)from.WeaponType].ProjectileSpeed)
+        //                };
+        float a = Vector2.Dot(vectorToVelocity, vectorToVelocity) - (float)(World.Constants.Weapons[(int)from.WeaponType].ProjectileSpeed * World.Constants.Weapons[(int)from.WeaponType].ProjectileSpeed);
+        float b = 2 * Vector2.Dot(vectorToVelocity, totarget);
+        float c = Vector2.Dot(totarget, totarget);
+
+        float p = -b / (2 * a);
+        float q = (float)Math.Sqrt((b * b) - 4 * a * c) / (2 * a);
+
+        float t1 = p - q;
+        float t2 = p + q;
+        float t;
+
+        if (t1 > t2 && t2 > 0)
+        {
+            t = t2;
+        }
+        else
+        {
+            t = t1;
+        }
+
+        var aimSpot = vectorTo + vectorToVelocity * t;
+        // Vector2 bulletPath = aimSpot - tower.position;
+        // float timeToImpact = bulletPath.Length() / bullet.speed; //speed must be in units per second
+
+        // return GetTargetDirectionTo(from.Position, to.Position, world, debugInterface); // todo
+        // var distance = GetDistanceBetween(from.Position, to.Position);
+        // var coefficient = world.Constants.Weapons[(int)from.WeaponType].ProjectileSpeed;
+        //
+        // var direction = new Vec2
+        //                 {
+        //                     X = aimSpot.X,
+        //                     Y = aimSpot.Y,
+        //                 };
+        //
+        var direction = new Vec2(aimSpot.X - from.Position.X, aimSpot.Y - from.Position.Y);
+
+        var angle = (float)Math.Atan2(direction.Y - from.Position.Y, direction.X - from.Position.X);
+        // var angle = (float)Math.Atan2(direction.Y, direction.X);
+
+        var velocity = new Vec2
+                       {
+                           X = (direction.X - from.Position.X + Math.Cos(angle) * 20) * invertCoefficient,
+                           Y = (direction.Y - from.Position.Y + Math.Sin(angle) * 20) * invertCoefficient
+                           // X = direction.X + Math.Cos(angle) * 20,
+                           // Y = direction.Y + Math.Sin(angle) * 20
+                       };
+        return (direction, velocity);
+    }
 
     public (Vec2 direction, Vec2 velocity) GetSmartMovement(CustomUnit from, Vec2 to,
                                                             bool invertedVelocity = false)
