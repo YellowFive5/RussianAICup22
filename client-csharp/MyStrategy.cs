@@ -17,7 +17,7 @@ namespace AiCup22
         private DebugInterface DebugInterface { get; set; }
         public Dictionary<int, UnitOrder> Command { get; set; }
 
-        private readonly bool debugPrint = false;
+        private readonly bool debugPrint = true;
 
         public MyStrategy(Constants constants)
         {
@@ -44,17 +44,17 @@ namespace AiCup22
             // DebugInterface.Add(new DebugData.Ring(World.NearestSniperAmmoLoot.Position, 2, 2, CustomDebug.VioletColor));
             // DebugInterface.Add(new DebugData.PolyLine(new[] { new Vec2(50,100), new Vec2(0,50) }, 5, CustomDebug.GreenColor));
 
-            ReturnInZone();
+            // ReturnInZone();
 
-            GoHeel();
+            // GoHeel();
 
-            TakePotions();
+            // TakePotions();
 
-            TakeAmmo();
+            // TakeAmmo();
 
-            AttackEnemy();
+            // AttackEnemy();
 
-            ChangeWeapon();
+            // ChangeWeapon();
 
             GoToTarget();
         }
@@ -229,7 +229,7 @@ namespace AiCup22
         private void RunAwayFrom(CustomUnit unit, bool withShoot = false)
         {
             var targetVelocity = Measurer.GetTargetVelocityTo(Me.Position, unit.Position, true);
-            var targetDirection = Measurer.GetAdvancedTargetDirectionTo(Me, unit, World);
+            var targetDirection = Measurer.GetAdvancedTargetDirectionTo(Me, unit, World, DebugInterface);
 
             if (debugPrint)
             {
@@ -252,7 +252,7 @@ namespace AiCup22
         private void GoPickup(CustomItem item)
         {
             var targetVelocity = Measurer.GetTargetVelocityTo(Me.Position, item.Position);
-            var targetDirection = Measurer.GetTargetDirectionTo(Me.Position, item.Position);
+            var targetDirection = Measurer.GetTargetDirectionTo(Me.Position, item.Position, World, DebugInterface);
             var actionPickup = new ActionOrder.Pickup(item.Id);
             Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(targetVelocity, targetDirection, actionPickup) }, };
         }
@@ -260,21 +260,28 @@ namespace AiCup22
         private void Go(CustomItem item)
         {
             var targetVelocity = Measurer.GetTargetVelocityTo(Me.Position, item.Position);
-            var targetDirection = Measurer.GetTargetDirectionTo(Me.Position, item.Position);
+            var targetDirection = Measurer.GetTargetDirectionTo(Me.Position, item.Position, World, DebugInterface);
             Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(targetVelocity, targetDirection, null) }, };
         }
 
-        private void Go(Vec2 item)
+        private void Go(Vec2 point)
         {
-            var targetVelocity = Measurer.GetTargetVelocityTo(Me.Position, item);
-            var targetDirection = Measurer.GetTargetDirectionTo(Me.Position, item);
-            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(targetVelocity, targetDirection, null) }, };
+            // var targetVelocity = Measurer.GetTargetVelocityTo(Me.Position, item);
+            // var targetDirection = Measurer.GetTargetDirectionTo(Me.Position, item, World, DebugInterface);
+            var t = Measurer.GetSmartMovement(Me, point, false, World, DebugInterface);
+
+            if (debugPrint)
+            {
+                DebugInterface.Add(new DebugData.Ring(point, 2, 2, CustomDebug.VioletColor));
+            }
+
+            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(t.velocity, t.direction, null) }, };
         }
 
         private void ComeToAim(CustomUnit unit, bool withShot = false)
         {
             var targetVelocity = Measurer.GetRandomVec();
-            var targetDirection = Measurer.GetAdvancedTargetDirectionTo(Me, unit, World);
+            var targetDirection = Measurer.GetAdvancedTargetDirectionTo(Me, unit, World, DebugInterface);
 
             if (debugPrint)
             {

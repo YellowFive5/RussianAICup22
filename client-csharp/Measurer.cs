@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using AiCup22.CustomModel;
+using AiCup22.Debugging;
 using AiCup22.Model;
 using Object = AiCup22.CustomModel.Object;
 
@@ -15,33 +16,47 @@ public static class Measurer
 {
     public static readonly double[] WeaponRanges = { 24, 16, 36 };
     public const double InZonePointCoefficient = 0.1;
+    public const double UnitRadius = 1.0;
 
     public static double GetDistanceBetween(Vec2 a, Vec2 b)
     {
         return Math.Sqrt(Math.Pow(a.X - b.X, 2) + Math.Pow(a.Y - b.Y, 2));
     }
 
-    public static Vec2 GetTargetDirectionTo(Vec2 from, Vec2 to, bool inversed = false)
+    public static Vec2 GetTargetDirectionTo(Vec2 from, Vec2 to, World world, DebugInterface debugInterface, bool inversed = false)
     {
-        if (inversed)
+        var nearestObject = world.Objects
+                                 .OrderBy(o => GetDistanceBetween(from, o.Position))
+                                 .FirstOrDefault();
+        var collisionRadius = nearestObject.Radius + UnitRadius * 1.1;
+        var collisioned = GetDistanceBetween(from, nearestObject.Position) <= collisionRadius;
+
+        var x = collisioned
+                    ? from.X - nearestObject.Position.X
+                    : to.X - from.X;
+        var y = collisioned
+                    ? from.Y - nearestObject.Position.Y
+                    : to.Y - from.Y;
+
+        if (collisioned)
         {
-            return new Vec2
-                   {
-                       X = (to.X - from.X) * -1,
-                       Y = (to.Y - from.Y) * -1
-                   };
+            debugInterface.Add(new DebugData.Ring(nearestObject.Position, collisionRadius, 0.3, CustomDebug.BlueColor));
         }
+
+        var invertCoefficient = inversed
+                                    ? -1
+                                    : 1;
 
         return new Vec2
                {
-                   X = to.X - from.X,
-                   Y = to.Y - from.Y
+                   X = x * invertCoefficient,
+                   Y = y * invertCoefficient
                };
     }
 
-    public static Vec2 GetAdvancedTargetDirectionTo(CustomUnit from, CustomUnit to, World world)
+    public static Vec2 GetAdvancedTargetDirectionTo(CustomUnit from, CustomUnit to, World world, DebugInterface debugInterface)
     {
-        return GetTargetDirectionTo(from.Position, to.Position);
+        return GetTargetDirectionTo(from.Position, to.Position, world, debugInterface); // todo
         var distance = GetDistanceBetween(from.Position, to.Position);
         var coefficient = world.Constants.Weapons[(int)from.WeaponType].ProjectileSpeed;
 
@@ -55,20 +70,50 @@ public static class Measurer
     public static Vec2 GetTargetVelocityTo(Vec2 from, Vec2 to, bool inversed = false)
     {
         var angle = (float)Math.Atan2(to.Y - from.Y, to.X - from.X);
-        if (inversed)
-        {
-            return new Vec2
-                   {
-                       X = (to.X - from.X + Math.Cos(angle) * 20) * -1,
-                       Y = (to.Y - from.Y + Math.Sin(angle) * 20) * -1
-                   };
-        }
-
+        var invertCoefficient = inversed
+                                    ? -1
+                                    : 1;
         return new Vec2
                {
-                   X = to.X - from.X + Math.Cos(angle) * 20,
-                   Y = to.Y - from.Y + Math.Sin(angle) * 20
+                   X = (to.X - from.X + Math.Cos(angle) * 20) * invertCoefficient,
+                   Y = (to.Y - from.Y + Math.Sin(angle) * 20) * invertCoefficient
                };
+    }
+
+    public static (Vec2 direction, Vec2 velocity) GetSmartMovement(CustomUnit from, Vec2 to, bool inversedVelocity, World world, DebugInterface debugInterface)
+    {
+        var nearestObject = world.Objects
+                                 .OrderBy(o => GetDistanceBetween(from.Position, o.Position))
+                                 .FirstOrDefault();
+        var collisionRadius = nearestObject.Radius + UnitRadius * 1.5;
+        var collisioned = GetDistanceBetween(from.Position, nearestObject.Position) <= collisionRadius;
+
+        if (collisioned)
+        {
+            debugInterface.Add(new DebugData.Ring(nearestObject.Position, collisionRadius, 0.3, CustomDebug.BlueColor));
+        }
+
+        var invertCoefficient = inversedVelocity && !collisioned
+                                    ? -1
+                                    : 1;
+
+        var realFrom = !collisioned
+                           ? from.Position
+                           : nearestObject.Position;
+        var realTarget = !collisioned
+                             ? to
+                             : from.Position;
+        // no slowdown when reach
+        var angle = (float)Math.Atan2(realTarget.Y - realFrom.Y, realTarget.X - realFrom.X);
+        var velocity = new Vec2
+                       {
+                           X = (realTarget.X - realFrom.X + Math.Cos(angle) * 20) * invertCoefficient,
+                           Y = (realTarget.Y - realFrom.Y + Math.Sin(angle) * 20) * invertCoefficient
+                       };
+
+        var direction = new Vec2(to.X - from.Position.X, to.Y - from.Position.Y);
+
+        return (direction, velocity);
     }
 
     public static Vec2 GetRandomVec()
