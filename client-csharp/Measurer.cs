@@ -13,7 +13,7 @@ public class Measurer
 {
     public World World { get; }
     public DebugInterface DebugInterface { get; }
-    public readonly double[] WeaponRanges = { 24, 16, 36 };
+    public readonly double[] WeaponRanges = { 30.3, 20.3, 40.4 };
     public const double InZonePointCoefficient = 0.1;
     public const double UnitRadius = 1.0;
 
