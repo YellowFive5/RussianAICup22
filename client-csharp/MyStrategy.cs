@@ -57,19 +57,22 @@ namespace AiCup22
             GoToTarget();
         }
 
+
+        #region Behaviour
+
         private void ProcessItems()
         {
-            // if (Me.IsPotionsEmpty)
-            // {
-            //     CollectPotions();
-            //     return;
-            // }
-            //
-            // if (Me.IsAmmoEmpty)
-            // {
-            //     CollectAmmo();
-            //     return;
-            // }
+            if (Me.IsPotionsEmpty)
+            {
+                CollectPotions();
+                return;
+            }
+
+            if (Me.IsAmmoEmpty)
+            {
+                CollectAmmo();
+                return;
+            }
 
             // NormalOrder
             CollectPotions();
@@ -78,8 +81,6 @@ namespace AiCup22
 
             ChangeWeapon();
         }
-
-        #region Behaviour
 
         private void ReturnInZone()
         {
