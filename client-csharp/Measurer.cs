@@ -12,77 +12,43 @@ using Object = AiCup22.CustomModel.Object;
 
 namespace AiCup22;
 
-public static class Measurer
+public class Measurer
 {
-    public static readonly double[] WeaponRanges = { 24, 16, 36 };
+    public World World { get; }
+    public DebugInterface DebugInterface { get; }
+    public readonly double[] WeaponRanges = { 24, 16, 36 };
     public const double InZonePointCoefficient = 0.1;
     public const double UnitRadius = 1.0;
+
+    public Measurer(World world, DebugInterface debugInterface)
+    {
+        World = world;
+        DebugInterface = debugInterface;
+    }
 
     public static double GetDistanceBetween(Vec2 a, Vec2 b)
     {
         return Math.Sqrt(Math.Pow(a.X - b.X, 2) + Math.Pow(a.Y - b.Y, 2));
     }
 
-    public static Vec2 GetTargetDirectionTo(Vec2 from, Vec2 to, World world, DebugInterface debugInterface, bool inversed = false)
+
+    // public Vec2 GetAdvancedTargetDirectionTo(CustomUnit from, CustomUnit to, World world)
+    // {
+    //     return GetTargetDirectionTo(from.Position, to.Position, world, debugInterface); // todo
+    //     var distance = GetDistanceBetween(from.Position, to.Position);
+    //     var coefficient = world.Constants.Weapons[(int)from.WeaponType].ProjectileSpeed;
+    //
+    //     return new Vec2
+    //            {
+    //                X = to.Position.X - from.Position.X + to.Unit.Velocity.X + distance / coefficient * 0.6,
+    //                Y = to.Position.Y - from.Position.Y + to.Unit.Velocity.Y + distance / coefficient * 0.6,
+    //            };
+    // }
+
+    public (Vec2 direction, Vec2 velocity) GetSmartMovement(CustomUnit from, Vec2 to,
+                                                            bool invertedVelocity = false)
     {
-        var nearestObject = world.Objects
-                                 .OrderBy(o => GetDistanceBetween(from, o.Position))
-                                 .FirstOrDefault();
-        var collisionRadius = nearestObject.Radius + UnitRadius * 1.1;
-        var collisioned = GetDistanceBetween(from, nearestObject.Position) <= collisionRadius;
-
-        var x = collisioned
-                    ? from.X - nearestObject.Position.X
-                    : to.X - from.X;
-        var y = collisioned
-                    ? from.Y - nearestObject.Position.Y
-                    : to.Y - from.Y;
-
-        if (collisioned)
-        {
-            debugInterface.Add(new DebugData.Ring(nearestObject.Position, collisionRadius, 0.3, CustomDebug.BlueColor));
-        }
-
-        var invertCoefficient = inversed
-                                    ? -1
-                                    : 1;
-
-        return new Vec2
-               {
-                   X = x * invertCoefficient,
-                   Y = y * invertCoefficient
-               };
-    }
-
-    public static Vec2 GetAdvancedTargetDirectionTo(CustomUnit from, CustomUnit to, World world, DebugInterface debugInterface)
-    {
-        return GetTargetDirectionTo(from.Position, to.Position, world, debugInterface); // todo
-        var distance = GetDistanceBetween(from.Position, to.Position);
-        var coefficient = world.Constants.Weapons[(int)from.WeaponType].ProjectileSpeed;
-
-        return new Vec2
-               {
-                   X = to.Position.X - from.Position.X + to.Unit.Velocity.X + distance / coefficient * 0.6,
-                   Y = to.Position.Y - from.Position.Y + to.Unit.Velocity.Y + distance / coefficient * 0.6,
-               };
-    }
-
-    public static Vec2 GetTargetVelocityTo(Vec2 from, Vec2 to, bool inversed = false)
-    {
-        var angle = (float)Math.Atan2(to.Y - from.Y, to.X - from.X);
-        var invertCoefficient = inversed
-                                    ? -1
-                                    : 1;
-        return new Vec2
-               {
-                   X = (to.X - from.X + Math.Cos(angle) * 20) * invertCoefficient,
-                   Y = (to.Y - from.Y + Math.Sin(angle) * 20) * invertCoefficient
-               };
-    }
-
-    public static (Vec2 direction, Vec2 velocity) GetSmartMovement(CustomUnit from, Vec2 to, bool inversedVelocity, World world, DebugInterface debugInterface)
-    {
-        var nearestObject = world.Objects
+        var nearestObject = World.Objects
                                  .OrderBy(o => GetDistanceBetween(from.Position, o.Position))
                                  .FirstOrDefault();
         var collisionRadius = nearestObject.Radius + UnitRadius * 1.5;
@@ -90,19 +56,22 @@ public static class Measurer
 
         if (collisioned)
         {
-            debugInterface.Add(new DebugData.Ring(nearestObject.Position, collisionRadius, 0.3, CustomDebug.BlueColor));
+            DebugInterface.Add(new DebugData.Ring(nearestObject.Position, collisionRadius, 0.3, CustomDebug.BlueColor));
         }
 
-        var invertCoefficient = inversedVelocity && !collisioned
+        var invertCoefficient = invertedVelocity && !collisioned
                                     ? -1
                                     : 1;
 
-        var realFrom = !collisioned
-                           ? from.Position
-                           : nearestObject.Position;
-        var realTarget = !collisioned
-                             ? to
-                             : from.Position;
+        // todo temp off
+        // var realFrom = !collisioned
+        //                    ? from.Position
+        //                    : nearestObject.Position;
+        // var realTarget = !collisioned
+        //                      ? to
+        //                      : from.Position;
+        var realFrom = from.Position;
+        var realTarget = to;
         // no slowdown when reach
         var angle = (float)Math.Atan2(realTarget.Y - realFrom.Y, realTarget.X - realFrom.X);
         var velocity = new Vec2
@@ -116,7 +85,7 @@ public static class Measurer
         return (direction, velocity);
     }
 
-    public static Vec2 GetRandomVec()
+    public Vec2 GetRandomVec()
     {
         return new Vec2
                {
@@ -125,7 +94,7 @@ public static class Measurer
                };
     }
 
-    public static Vec2 GetZoneBorderPoint(CustomItem item, Vec2 zoneCenter, double zoneRadius)
+    public Vec2 GetZoneBorderPoint(CustomItem item, Vec2 zoneCenter, double zoneRadius)
     {
         var vX = item.Position.X - zoneCenter.X;
         var vY = item.Position.Y - zoneCenter.Y;
@@ -135,12 +104,12 @@ public static class Measurer
         return new Vec2 { X = aX, Y = aY };
     }
 
-    public static bool IsDistanceAllowToHit(CustomUnit from, CustomUnit to)
+    public bool IsDistanceAllowToHit(CustomUnit from, CustomUnit to)
     {
         return GetDistanceBetween(from.Position, to.Position) <= WeaponRanges[(int)from.WeaponType];
     }
 
-    public static bool IsClearVisible(CustomUnit from, CustomUnit to, IEnumerable<Object> objects)
+    public bool IsClearVisible(CustomUnit from, CustomUnit to, IEnumerable<Object> objects)
     {
         var distance = GetDistanceBetween(from.Position, to.Position);
         var potentialCover = objects.Where(o => !o.IsBulletProof &&
