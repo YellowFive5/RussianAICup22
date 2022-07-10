@@ -72,7 +72,7 @@ namespace AiCup22
 
             if (World.NearToOutOfZone)
             {
-                Go(Measurer.GetZoneBorderPoint(Me, World.ZoneCenter, World.ZoneRadius));
+                Go(Measurer.GetZoneBorderPoint(Me));
             }
         }
 
@@ -253,7 +253,7 @@ namespace AiCup22
                 return;
             }
 
-            Go(Measurer.GetZoneBorderPoint(Me, World.ZoneCenter, World.ZoneRadius));
+            Go(Measurer.GetZoneBorderPoint(Me));
         }
 
         #endregion
@@ -314,7 +314,7 @@ namespace AiCup22
             }
 
             var actionUseShieldPotion = new ActionOrder.UseShieldPotion();
-            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(Measurer.GetRandomVec(), Measurer.GetRandomVec(), actionUseShieldPotion) }, };
+            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(Measurer.GetRandomVec(), Me.Unit.Direction, actionUseShieldPotion) }, };
         }
 
         #endregion

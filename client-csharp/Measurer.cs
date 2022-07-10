@@ -3,7 +3,6 @@
 using System;
 using System.Linq;
 using AiCup22.CustomModel;
-using AiCup22.Debugging;
 using AiCup22.Model;
 
 #endregion
@@ -92,13 +91,13 @@ public class Measurer
                };
     }
 
-    public Vec2 GetZoneBorderPoint(CustomItem item, Vec2 zoneCenter, double zoneRadius)
+    public Vec2 GetZoneBorderPoint(CustomItem item)
     {
-        var vX = item.Position.X - zoneCenter.X;
-        var vY = item.Position.Y - zoneCenter.Y;
+        var vX = item.Position.X - World.ZoneCenter.X;
+        var vY = item.Position.Y - World.ZoneCenter.Y;
         var magV = Math.Sqrt(vX * vX + vY * vY);
-        var aX = zoneCenter.X + vX / magV * (zoneRadius - InZonePointCoefficient * zoneRadius);
-        var aY = zoneCenter.Y + vY / magV * (zoneRadius - InZonePointCoefficient * zoneRadius);
+        var aX = World.ZoneCenter.X + vX / magV * (World.ZoneRadius - InZonePointCoefficient * World.ZoneRadius);
+        var aY = World.ZoneCenter.Y + vY / magV * (World.ZoneRadius - InZonePointCoefficient * World.ZoneRadius);
         return new Vec2 { X = aX, Y = aY };
     }
 
