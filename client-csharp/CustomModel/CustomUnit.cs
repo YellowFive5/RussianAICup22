@@ -9,6 +9,8 @@ namespace AiCup22.CustomModel;
 public abstract class CustomUnit : CustomItem
 {
     public Unit Unit { get; }
+    public Vec2 Velocity { get; }
+    public Vec2 Direction { get; }
     public double Health { get; }
     public bool IsHealthDamaged => Health <= Constants.UnitHealth * 0.85;
     public bool IsHealthInjured => Health <= Constants.UnitHealth * 0.5;
@@ -37,6 +39,8 @@ public abstract class CustomUnit : CustomItem
     protected CustomUnit(Unit unit, Constants constants) : base(unit.Id, unit.Position, constants)
     {
         Unit = unit;
+        Velocity = unit.Velocity;
+        Direction = unit.Direction;
         WeaponType = unit.Weapon switch
         {
             0 => WeaponLootItem.WeaponType.Pistol,
