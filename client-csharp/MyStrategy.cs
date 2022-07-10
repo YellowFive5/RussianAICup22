@@ -49,7 +49,7 @@ namespace AiCup22
             ReturnInZone();
 
             Heel();
-
+            
             CollectPotions();
 
             CollectAmmo();
@@ -203,13 +203,14 @@ namespace AiCup22
                 return;
             }
 
-            // I can't hit
+            // No distance to hit - came to
             if (!Measurer.IsDistanceAllowToHit(Me, World.NearestEnemy))
             {
                 Go(World.NearestEnemy);
                 return;
             }
 
+            // Has distance and clear vision
             if (Measurer.IsClearVisible(Me, World.NearestEnemy) &&
                 Me.IsAimed)
             {

@@ -17,6 +17,7 @@ public abstract class CustomUnit : CustomItem
     public bool IsShieldInjured => Shield <= Constants.MaxShield * 0.5;
     public bool IsShieldEmpty => Shield <= 0;
 
+    public double HealthShieldPoints => Health + Shield;
     public int Potions { get; }
     public bool IsPotionsFull => Potions >= Constants.MaxShieldPotionsInInventory;
     public bool NeedToCollectPotions => Potions <= Constants.MaxShieldPotionsInInventory * 0.5;
