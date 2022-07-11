@@ -40,14 +40,11 @@ public class World
     public List<EnemyUnit> EnemyUnits { get; set; } = new();
     public EnemyUnit NearestEnemy => EnemyUnits.OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
     public bool IsNearestEnemyVisible => NearestEnemy != null;
-    public EnemyUnit NearestWeakestEnemy => EnemyUnits.OrderBy(e => e.Shield).FirstOrDefault();
+    public EnemyUnit NearestWeakestEnemy => EnemyUnits.OrderBy(e => e.HealthShieldPoints).FirstOrDefault();
 
-    // public EnemyUnit NearestRichestEnemy => EnemyUnits.Join(Game.Players,
-    //                                                         units => units.Unit.PlayerId,
-    //                                                         players => players.Id,
-    //                                                         (units, players) =>
-    //                                                             new { OwnerName = person.FirstName, PetName = pet.Name }))
-    // .FirstOrDefault(); // todo
+    public EnemyUnit ReachestPointsEnemy => EnemyUnits
+                                            .OrderByDescending(u => Game.Players.Single(p => p.Id == u.Unit.PlayerId).Score)
+                                            .FirstOrDefault();
 
     public double NearestEnemyDistance => Measurer.GetDistanceBetween(Me.Position, NearestEnemy.Position);
     public EnemyUnit NearestPistolEnemy => EnemyUnits.Where(e => e.WeaponType == WeaponLootItem.WeaponType.Pistol).OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
