@@ -18,6 +18,7 @@ namespace AiCup22
         public Dictionary<int, UnitOrder> Command { get; set; }
 
         private readonly bool debugPrint = false;
+        private int playerTurn;
 
         public MyStrategy(Constants constants)
         {
@@ -26,12 +27,17 @@ namespace AiCup22
 
         public Order GetOrder(Game game, DebugInterface debugInterface)
         {
+            var players = game.Units.Count(u => u.PlayerId == game.MyId);
+            playerTurn = playerTurn >= players - 1
+                                     ? 0
+                                     : playerTurn + 1;
+
             DebugInterface = debugInterface;
             Command = new Dictionary<int, UnitOrder>();
 
             Measurer = new Measurer(World, DebugInterface);
 
-            World.Scan(game);
+            World.Scan(game, playerTurn);
 
             ChooseAction();
 

@@ -28,7 +28,7 @@ public class World
 
     #region Units
 
-    public MyUnit Me => MyUnits.First(); // todo Round 1 only
+    public MyUnit Me { get; set; }
     public bool OutOfZone { get; set; }
     public bool NearToOutOfZone { get; set; }
     public List<MyUnit> MyUnits { get; set; } = new();
@@ -147,7 +147,7 @@ public class World
         Constants = constants;
     }
 
-    public void Scan(Game game)
+    public void Scan(Game game, int playerTurn)
     {
         Game = game;
         ZoneCenter = game.Zone.CurrentCenter;
@@ -168,6 +168,8 @@ public class World
                 EnemyUnits.Add(new EnemyUnit(unit, Constants));
             }
         }
+
+        Me = MyUnits.ElementAt(playerTurn);
 
         OutOfZone = Measurer.GetDistanceBetween(ZoneCenter, Me.Position) >= game.Zone.CurrentRadius;
         NearToOutOfZone = Measurer.GetDistanceBetween(ZoneCenter, Me.Position) >= game.Zone.CurrentRadius * 0.97;
