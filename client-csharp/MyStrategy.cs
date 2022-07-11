@@ -88,7 +88,7 @@ namespace AiCup22
 
             if (World.NearToOutOfZone)
             {
-                Go(Measurer.GetZoneBorderPoint(Me));
+                GoTo(Measurer.GetZoneBorderPoint(Me));
             }
         }
 
@@ -118,12 +118,12 @@ namespace AiCup22
                         Measurer.IsDistanceAllowToHit(Me, World.NearestEnemy))
                     {
                         // Shoot
-                        RunAwayFrom(World.NearestEnemy, true);
+                        GoBackFrom(World.NearestEnemy, true);
                         return;
                     }
 
                     // Aim
-                    RunAwayFrom(World.NearestEnemy);
+                    GoBackFrom(World.NearestEnemy);
                     return;
                 }
 
@@ -210,19 +210,19 @@ namespace AiCup22
                 if (Me.IsAimed)
                 {
                     // Shoot
-                    RunAwayFrom(World.NearestSniperEnemy, true);
+                    GoBackFrom(World.NearestSniperEnemy, true);
                     return;
                 }
 
                 // Aim
-                RunAwayFrom(World.NearestSniperEnemy);
+                GoBackFrom(World.NearestSniperEnemy);
                 return;
             }
 
             // No distance to hit - came to
             if (!Measurer.IsDistanceAllowToHit(Me, World.NearestEnemy))
             {
-                Go(World.NearestEnemy);
+                GoTo(World.NearestEnemy);
                 return;
             }
 
@@ -280,18 +280,18 @@ namespace AiCup22
                 return;
             }
 
-            Go(Measurer.GetZoneBorderPoint(Me));
+            GoTo(Measurer.GetZoneBorderPoint(Me));
         }
 
         #endregion
 
         #region Actions
 
-        private void RunAwayFrom(CustomUnit unit, bool withShoot = false)
+        private void GoBackFrom(CustomUnit unit, bool withShoot = false)
         {
             var movement = Measurer.GetSmartDirectionVelocity(Me, unit.Position, unit.Velocity);
             var actionAim = new ActionOrder.Aim(withShoot);
-            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(movement.velocity, movement.direction, actionAim) }, };
+            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(Measurer.GetRandomVec(), movement.direction, actionAim) }, };
         }
 
         private void GoPickup(CustomItem item)
@@ -301,13 +301,13 @@ namespace AiCup22
             Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(movement.velocity, movement.direction, actionPickup) }, };
         }
 
-        private void Go(CustomUnit unit)
+        private void GoTo(CustomUnit unit)
         {
             var movement = Measurer.GetSmartDirectionVelocity(Me, unit.Position, unit.Velocity);
             Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(movement.velocity, movement.direction, null) }, };
         }
 
-        private void Go(Vec2 point)
+        private void GoTo(Vec2 point)
         {
             var movement = Measurer.GetSmartDirectionVelocity(Me, point);
             Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(movement.velocity, movement.direction, null) }, };
@@ -317,7 +317,7 @@ namespace AiCup22
         {
             var smartAim = Measurer.GetSmartDirectionVelocity(Me, unit.Position, unit.Velocity);
             var actionAim = new ActionOrder.Aim(withShot);
-            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(smartAim.velocity, smartAim.direction, actionAim) }, };
+            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(Measurer.GetRandomVec(), smartAim.direction, actionAim) }, };
         }
 
         private void TakePotionIfHave()
@@ -328,7 +328,7 @@ namespace AiCup22
             }
 
             var actionUseShieldPotion = new ActionOrder.UseShieldPotion();
-            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(Me.Velocity, Me.Direction, actionUseShieldPotion) }, };
+            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(Measurer.GetRandomVec(), Me.Direction, actionUseShieldPotion) }, };
         }
 
         #endregion
