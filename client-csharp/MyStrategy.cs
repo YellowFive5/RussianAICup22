@@ -105,45 +105,24 @@ namespace AiCup22
                 return;
             }
 
-            if (Me.IsShieldInjured)
+            if (Me.IsPotionsEmpty || Me.IsShieldFull)
             {
-                // Under potential hit
-                if (Measurer.IsDistanceAllowToHit(World.NearestEnemy, Me, 0.75))
-                {
-                    // Covered
-                    if (!Measurer.IsClearVisible(World.NearestEnemy, Me))
-                    {
-                        // Heel
-                        TakePotionIfHave();
-                        return;
-                    }
-
-                    // Can I hit
-                    if (Measurer.IsClearVisible(Me, World.NearestEnemy) &&
-                        Me.IsAimed &&
-                        Measurer.IsDistanceAllowToHit(Me, World.NearestEnemy))
-                    {
-                        // Shoot
-                        GoBackFrom(World.NearestEnemy, true);
-                        return;
-                    }
-
-                    // Aim
-                    GoBackFrom(World.NearestEnemy);
-                    return;
-                }
-
-                // Heel
-                TakePotionIfHave();
                 return;
             }
 
-            if (Me.IsShieldDamaged)
+            if (Me.IsShieldEmpty)
             {
-                if (!Measurer.IsDistanceAllowToHit(World.NearestEnemy, Me, 0.5))
-                {
-                    TakePotionIfHave();
-                }
+                // Heel
+                TakePotion();
+                return;
+            }
+
+            if (!Measurer.IsDistanceAllowToHit(World.NearestEnemy, Me)
+                ||
+                !Measurer.IsClearVisible(World.NearestEnemy, Me))
+            {
+                // Heel
+                TakePotion();
             }
         }
 
@@ -326,15 +305,10 @@ namespace AiCup22
             Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(Measurer.GetRandomVec(), smartAim.direction, actionAim) }, };
         }
 
-        private void TakePotionIfHave()
+        private void TakePotion()
         {
-            if (Me.IsPotionsEmpty)
-            {
-                return;
-            }
-
             var actionUseShieldPotion = new ActionOrder.UseShieldPotion();
-            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(Measurer.GetRandomVec(), Measurer.GetInvertedVec(Me.Direction), actionUseShieldPotion) }, };
+            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(Measurer.GetRandomVec(), Me.Direction, actionUseShieldPotion) }, };
         }
 
         #endregion

@@ -18,6 +18,7 @@ public abstract class CustomUnit : CustomItem
     public bool IsShieldDamaged => Shield < Constants.MaxShield;
     public bool IsShieldInjured => Shield <= Constants.MaxShield * 0.5;
     public bool IsShieldEmpty => Shield <= 0;
+    public bool IsShieldFull => Shield >= Constants.MaxShield;
 
     public double HealthShieldPoints => Health + Shield;
     public int Potions { get; }
