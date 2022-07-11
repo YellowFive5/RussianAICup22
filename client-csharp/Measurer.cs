@@ -34,19 +34,32 @@ public class Measurer
                                                                      Vec2 targetVelocity = default,
                                                                      bool invertedVelocity = false)
     {
-        // var invertCoefficient = invertedVelocity && !collisioned
-        var invertCoefficient = invertedVelocity
+        var nearestCollisionObject = World.Objects.Cast<CustomItem>()
+                                          .Union(World.MyTeammates)
+                                          .OrderBy(o => GetDistanceBetween(from.Position, o.Position))
+                                          .FirstOrDefault();
+        var collisionRadius = nearestCollisionObject.Radius + from.Radius * 1.0;
+        var collisioned = GetDistanceBetween(from.Position, nearestCollisionObject.Position) <= collisionRadius;
+
+        var invertCoefficient = invertedVelocity && !collisioned
                                     ? -1
                                     : 1;
 
         // Default - Simple
         if (targetVelocity.X == 0 && targetVelocity.Y == 0)
         {
-            var angleSimple = (float)Math.Atan2(to.Y - from.Position.Y, to.X - from.Position.X);
+            var realFrom = !collisioned
+                               ? from.Position
+                               : nearestCollisionObject.Position;
+            var realTarget = !collisioned
+                                 ? to
+                                 : from.Position;
+
+            var angleSimple = (float)Math.Atan2(realTarget.Y - realFrom.Y, realTarget.X - realFrom.X);
             var velocitySimple = new Vec2
                                  {
-                                     X = (to.X - from.Position.X + Math.Cos(angleSimple) * 20) * invertCoefficient,
-                                     Y = (to.Y - from.Position.Y + Math.Sin(angleSimple) * 20) * invertCoefficient
+                                     X = (realTarget.X - realFrom.X + Math.Cos(angleSimple) * 20) * invertCoefficient,
+                                     Y = (realTarget.Y - realFrom.Y + Math.Sin(angleSimple) * 20) * invertCoefficient
                                  };
 
             var directionSimple = new Vec2(to.X - from.Position.X, to.Y - from.Position.Y);
@@ -94,48 +107,6 @@ public class Measurer
         return (direction, velocity);
     }
 
-    //todo collision tries
-    public (Vec2 direction, Vec2 velocity) GetMovementCollisionTest(CustomUnit from,
-                                                                    Vec2 to,
-                                                                    bool invertedVelocity = false)
-    {
-        var nearestObject = World.Objects
-                                 .OrderBy(o => GetDistanceBetween(from.Position, o.Position))
-                                 .FirstOrDefault();
-        var collisionRadius = nearestObject.Radius + UnitRadius * 1.5;
-        var collisioned = GetDistanceBetween(from.Position, nearestObject.Position) <= collisionRadius;
-
-        // if (collisioned)
-        // {
-        //     DebugInterface.Add(new DebugData.Ring(nearestObject.Position, collisionRadius, 0.3, CustomDebug.BlueColor));
-        // }
-
-        var invertCoefficient = invertedVelocity && !collisioned
-                                    ? -1
-                                    : 1;
-
-        // todo temp off
-        // var realFrom = !collisioned
-        //                    ? from.Position
-        //                    : nearestObject.Position;
-        // var realTarget = !collisioned
-        //                      ? to
-        //                      : from.Position;
-        var realFrom = from.Position;
-        var realTarget = to;
-        // no slowdown when reach
-        var angle = (float)Math.Atan2(realTarget.Y - realFrom.Y, realTarget.X - realFrom.X);
-        var velocity = new Vec2
-                       {
-                           X = (realTarget.X - realFrom.X + Math.Cos(angle) * 20) * invertCoefficient,
-                           Y = (realTarget.Y - realFrom.Y + Math.Sin(angle) * 20) * invertCoefficient
-                       };
-
-        var direction = new Vec2(to.X - from.Position.X, to.Y - from.Position.Y);
-
-        return (direction, velocity);
-    }
-
     public Vec2 GetRandomVec()
     {
         return new Vec2
@@ -173,9 +144,11 @@ public class Measurer
         }
 
         var distance = GetDistanceBetween(from.Position, to.Position);
-        var potentialCover = World.Objects.Where(o => !o.IsBulletProof &&
-                                                      GetDistanceBetween(from.Position, o.Position) <= distance * 1.15 &&
-                                                      GetDistanceBetween(to.Position, o.Position) <= distance * 1.15);
+        var potentialCover = World.Objects.Cast<CustomItem>()
+                                  // .Union(World.AllUnits) // todo
+                                  .Where(o => !o.IsBulletProof &&
+                                              GetDistanceBetween(from.Position, o.Position) <= distance * 1.15 &&
+                                              GetDistanceBetween(to.Position, o.Position) <= distance * 1.15);
 
         var dpx = to.Position.X - from.Position.X;
         var dpy = to.Position.Y - from.Position.Y;

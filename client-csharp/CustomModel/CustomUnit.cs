@@ -36,7 +36,7 @@ public abstract class CustomUnit : CustomItem
     public bool IsAimed => Unit.Aim >= 1;
     public bool IsHalfAimed => Unit.Aim > 0.5;
 
-    protected CustomUnit(Unit unit, Constants constants) : base(unit.Id, unit.Position, constants)
+    protected CustomUnit(Unit unit, Constants constants) : base(unit.Id, unit.Position, 1, false, constants)
     {
         Unit = unit;
         Velocity = unit.Velocity;

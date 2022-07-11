@@ -31,7 +31,12 @@ public class World
     public MyUnit Me { get; set; }
     public bool OutOfZone { get; set; }
     public bool NearToOutOfZone { get; set; }
+
+    public List<CustomUnit> AllUnits => MyUnits.Cast<CustomUnit>()
+                                               .Union(EnemyUnits).ToList();
+
     public List<MyUnit> MyUnits { get; set; } = new();
+    public List<MyUnit> MyTeammates => MyUnits.Where(u => u.Id != Me.Id).ToList();
     public List<EnemyUnit> EnemyUnits { get; set; } = new();
     public EnemyUnit NearestEnemy => EnemyUnits.OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
     public bool IsNearestEnemyVisible => NearestEnemy != null;
