@@ -29,8 +29,8 @@ namespace AiCup22
         {
             var players = game.Units.Count(u => u.PlayerId == game.MyId);
             playerTurn = playerTurn >= players - 1
-                                     ? 0
-                                     : playerTurn + 1;
+                             ? 0
+                             : playerTurn + 1;
 
             DebugInterface = debugInterface;
             Command = new Dictionary<int, UnitOrder>();
@@ -316,7 +316,7 @@ namespace AiCup22
         private void GoTo(Vec2 point)
         {
             var movement = Measurer.GetSmartDirectionVelocity(Me, point);
-            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(movement.velocity, movement.direction, null) }, };
+            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(movement.velocity, Measurer.GetInvertedVec(Me.Direction), null) }, };
         }
 
         private void ComeToAim(CustomUnit unit, bool withShot = false, bool inverted = false)
@@ -334,7 +334,7 @@ namespace AiCup22
             }
 
             var actionUseShieldPotion = new ActionOrder.UseShieldPotion();
-            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(Measurer.GetRandomVec(), Me.Direction, actionUseShieldPotion) }, };
+            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(Measurer.GetRandomVec(), Measurer.GetInvertedVec(Me.Direction), actionUseShieldPotion) }, };
         }
 
         #endregion

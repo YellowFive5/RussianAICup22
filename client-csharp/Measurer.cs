@@ -116,6 +116,15 @@ public class Measurer
                };
     }
 
+    public Vec2 GetInvertedVec(Vec2 to)
+    {
+        return new Vec2
+               {
+                   X = -to.Y,
+                   Y = to.X
+               };
+    }
+
     public Vec2 GetZoneBorderPoint(CustomItem item)
     {
         var vX = item.Position.X - World.ZoneCenter.X;
