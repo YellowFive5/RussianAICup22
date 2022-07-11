@@ -185,25 +185,6 @@ namespace AiCup22
                 return;
             }
 
-            // Be afraid of sniper when no sniper // todo test
-            if (Me.WeaponType is not WeaponLootItem.WeaponType.Sniper &&
-                World.IsNearestSniperEnemyVisible &&
-                Measurer.IsDistanceAllowToHit(World.NearestSniperEnemy, Me, 1.1) &&
-                Measurer.IsClearVisible(Me, World.NearestEnemy))
-            {
-                // Can I hit
-                if (Me.IsAimed)
-                {
-                    // Shoot
-                    GoBackFrom(World.NearestSniperEnemy, true);
-                    return;
-                }
-
-                // Aim
-                GoBackFrom(World.NearestSniperEnemy);
-                return;
-            }
-
             // No distance to hit - came to
             if (!Measurer.IsDistanceAllowToHit(Me, World.NearestEnemy))
             {
