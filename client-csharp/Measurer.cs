@@ -32,8 +32,7 @@ public class Measurer
     {
         var nearestCollisionObject = GetCollisionObjectsOnMyWay(from, to);
 
-        var collisioned = nearestCollisionObject != null &&
-                          GetDistanceBetween(from.Position, to) > GetDistanceBetween(to, nearestCollisionObject.Position);
+        var collisioned = nearestCollisionObject != null && Math.Round(GetDistanceBetween(from.Position, to)) >= Math.Round(GetDistanceBetween(to, nearestCollisionObject.Position));
 
         var invertCoefficient = invertedVelocity
                                     ? -1
@@ -48,9 +47,7 @@ public class Measurer
             if (collisioned)
             {
                 var r = nearestCollisionObject.Radius + UnitRadius;
-                DebugInterface.Add(new DebugData.Ring(nearestCollisionObject.Position, r, 0.1, CustomDebug.VioletColor));
 
-                // var r = collisionRadius * 0.9;
                 var dx = nearestCollisionObject.Position.X - realFrom.X;
                 var dy = nearestCollisionObject.Position.Y - realFrom.Y;
                 var dd = Math.Sqrt(dx * dx + dy * dy);
@@ -68,6 +65,11 @@ public class Measurer
                 realTarget = Math.Round(GetDistanceBetween(to, ta)) <= Math.Round(GetDistanceBetween(to, tb))
                                  ? new Vec2(ta.X + nearestCollisionObject.Position.X, ta.Y + nearestCollisionObject.Position.Y)
                                  : new Vec2(tb.X + nearestCollisionObject.Position.X, tb.Y + nearestCollisionObject.Position.Y);
+
+                // realTarget = new Vec2(tb.X + nearestCollisionObject.Position.X, tb.Y + nearestCollisionObject.Position.Y);
+                // realTarget = new Vec2(ta.X + nearestCollisionObject.Position.X, ta.Y + nearestCollisionObject.Position.Y);
+
+                DebugInterface.Add(new DebugData.Ring(nearestCollisionObject.Position, r, 0.1, CustomDebug.VioletColor));
                 DebugInterface.Add(new DebugData.PolyLine(new[] { realFrom, realTarget }, 0.3, CustomDebug.GreenColor));
             }
 
@@ -112,8 +114,8 @@ public class Measurer
 
         var aimSpot = vectorTo + vectorToVelocity * t;
         var direction = new Vec2(aimSpot.X - from.Position.X, aimSpot.Y - from.Position.Y);
+        var angle = FindAngle(from.Position, direction);
 
-        var angle = (float)Math.Atan2(direction.Y - from.Position.Y, direction.X - from.Position.X);
         var velocity = new Vec2
                        {
                            X = (direction.X - from.Position.X + Math.Cos(angle) * 20) * invertCoefficient,
@@ -198,7 +200,7 @@ public class Measurer
         var a = dpx * dpx + dpy * dpy;
         foreach (var o in potentialCover)
         {
-            var rad = o.Radius + UnitRadius * 2;
+            var rad = o.Radius + UnitRadius;
             var b = 2 * (dpx * (from.Position.X - o.Position.X) + dpy * (from.Position.Y - o.Position.Y));
             var c = o.Position.X * o.Position.X + o.Position.Y * o.Position.Y;
             c += from.Position.X * from.Position.X + from.Position.Y * from.Position.Y;
