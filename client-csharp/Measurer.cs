@@ -61,13 +61,14 @@ public class Measurer
                 t3 = b1 + a1;
                 var tb = new Vec2(r * -Math.Sin(t3),
                                   r * Math.Cos(t3));
-
-                realTarget = Math.Round(GetDistanceBetween(to, ta)) <= Math.Round(GetDistanceBetween(to, tb))
-                                 ? new Vec2(ta.X + nearestCollisionObject.Position.X, ta.Y + nearestCollisionObject.Position.Y)
-                                 : new Vec2(tb.X + nearestCollisionObject.Position.X, tb.Y + nearestCollisionObject.Position.Y);
-
+                
+                // realTarget = Math.Round(GetDistanceBetween(to, ta)) <= Math.Round(GetDistanceBetween(to, tb))
+                //                  ? new Vec2(ta.X + nearestCollisionObject.Position.X, ta.Y + nearestCollisionObject.Position.Y)
+                //                  : new Vec2(tb.X + nearestCollisionObject.Position.X, tb.Y + nearestCollisionObject.Position.Y);
+                //
                 // realTarget = new Vec2(tb.X + nearestCollisionObject.Position.X, tb.Y + nearestCollisionObject.Position.Y);
-                // realTarget = new Vec2(ta.X + nearestCollisionObject.Position.X, ta.Y + nearestCollisionObject.Position.Y);
+                // todo
+                realTarget = new Vec2(ta.X + nearestCollisionObject.Position.X, ta.Y + nearestCollisionObject.Position.Y);
 
                 DebugInterface.Add(new DebugData.Ring(nearestCollisionObject.Position, r, 0.1, CustomDebug.VioletColor));
                 DebugInterface.Add(new DebugData.PolyLine(new[] { realFrom, realTarget }, 0.3, CustomDebug.GreenColor));
