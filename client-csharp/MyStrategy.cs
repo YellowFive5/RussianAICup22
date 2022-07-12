@@ -281,9 +281,9 @@ namespace AiCup22
 
         private void ComeToAim(CustomUnit unit, bool withShot = false, bool inverted = false)
         {
-            var smartAim = Measurer.GetSmartDirectionVelocity(Me, unit.Position, unit.Velocity);
+            var smartAim = Measurer.GetSmartDirectionVelocity(Me, unit.Position, unit.Velocity, inverted);
             var actionAim = new ActionOrder.Aim(withShot);
-            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(Measurer.GetRandomVec(), smartAim.direction, actionAim) }, };
+            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(smartAim.velocity, smartAim.direction, actionAim) }, };
         }
 
         private void TakePotion()
