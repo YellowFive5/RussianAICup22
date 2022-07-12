@@ -70,8 +70,8 @@ public class Measurer
                 // todo
                 realTarget = new Vec2(ta.X + nearestCollisionObject.Position.X, ta.Y + nearestCollisionObject.Position.Y);
 
-                DebugInterface.Add(new DebugData.Ring(nearestCollisionObject.Position, r, 0.1, CustomDebug.VioletColor));
-                DebugInterface.Add(new DebugData.PolyLine(new[] { realFrom, realTarget }, 0.3, CustomDebug.GreenColor));
+                // DebugInterface.Add(new DebugData.Ring(nearestCollisionObject.Position, r, 0.1, CustomDebug.VioletColor));
+                // DebugInterface.Add(new DebugData.PolyLine(new[] { realFrom, realTarget }, 0.3, CustomDebug.GreenColor));
             }
 
             var angleSimple = FindAngle(realFrom, realTarget);
