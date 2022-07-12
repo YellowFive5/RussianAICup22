@@ -282,8 +282,11 @@ namespace AiCup22
         private void ComeToAim(CustomUnit unit, bool withShot = false, bool inverted = false)
         {
             var smartAim = Measurer.GetSmartDirectionVelocity(Me, unit.Position, unit.Velocity, inverted);
+            var velocity = withShot
+                               ? Measurer.GetWiggleVelocity(Me.Direction)
+                               : smartAim.velocity;
             var actionAim = new ActionOrder.Aim(withShot);
-            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(smartAim.velocity, smartAim.direction, actionAim) }, };
+            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(velocity, smartAim.direction, actionAim) }, };
         }
 
         private void TakePotion(bool turnAround = false)
@@ -292,7 +295,7 @@ namespace AiCup22
             var direction = turnAround
                                 ? Measurer.GetInvertedVec(Me.Direction)
                                 : Me.Direction;
-            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(Measurer.GetRandomVec(), direction, actionUseShieldPotion) }, };
+            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(Measurer.GetWiggleVelocity(Me.Direction), direction, actionUseShieldPotion) }, };
         }
 
         #endregion

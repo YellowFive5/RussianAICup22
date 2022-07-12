@@ -4,7 +4,6 @@ using System;
 using System.Linq;
 using System.Numerics;
 using AiCup22.CustomModel;
-using AiCup22.Debugging;
 using AiCup22.Model;
 
 #endregion
@@ -61,7 +60,7 @@ public class Measurer
                 t3 = b1 + a1;
                 var tb = new Vec2(r * -Math.Sin(t3),
                                   r * Math.Cos(t3));
-                
+
                 // realTarget = Math.Round(GetDistanceBetween(to, ta)) <= Math.Round(GetDistanceBetween(to, tb))
                 //                  ? new Vec2(ta.X + nearestCollisionObject.Position.X, ta.Y + nearestCollisionObject.Position.Y)
                 //                  : new Vec2(tb.X + nearestCollisionObject.Position.X, tb.Y + nearestCollisionObject.Position.Y);
@@ -235,6 +234,35 @@ public class Measurer
         var angle = FindAngle(from, through);
         return new Vec2(from.X + Math.Cos(angle) * rayDistance,
                         from.Y + Math.Sin(angle) * rayDistance);
+    }
+
+    public Vec2 GetWiggleVelocity(Vec2 from)
+    {
+        // var normaized = new Vec2(Me.Direction.X + Me.Position.X, Me.Direction.Y + Me.Position.Y);
+        // var p = Measurer.FindRayPoint(Me.Position, normaized);
+        // DebugInterface.Add(new DebugData.PolyLine(new[] { Me.Position, p }, 1, CustomDebug.GreenColor));
+        //
+        // var smartAim = Measurer.GetWiggleVelocity(Me.Direction);
+        // var normaizedV = new Vec2(smartAim.X + Me.Position.X, smartAim.Y + Me.Position.Y);
+        //
+        // DebugInterface.Add(new DebugData.PolyLine(new[] { Me.Position, normaizedV }, 1, CustomDebug.RedColor));
+        //
+        // var actionAim = new ActionOrder.Aim(false);
+        //
+        // Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(smartAim, Me.Direction, actionAim) }, };
+
+        var angles = new[] { 90, 270 };
+        const double degToRad = Math.PI / 180;
+        var angle = World.Game.CurrentTick / 15 % 3 == 0
+                        ? angles[0]
+                        : angles[1];
+        var ca = Math.Cos(angle * degToRad);
+        var sa = Math.Sin(angle * degToRad);
+        return new Vec2
+               {
+                   X = (ca * from.X - sa * from.Y) * 30,
+                   Y = (sa * from.X + ca * from.Y) * 30,
+               };
     }
 
     public Vec2 GetRandomVec()
