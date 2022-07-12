@@ -25,11 +25,6 @@ public class Measurer
         DebugInterface = debugInterface;
     }
 
-    public static double GetDistanceBetween(Vec2 a, Vec2 b)
-    {
-        return Math.Sqrt(Math.Pow(a.X - b.X, 2) + Math.Pow(a.Y - b.Y, 2));
-    }
-
     public (Vec2 direction, Vec2 velocity) GetSmartDirectionVelocity(CustomUnit from,
                                                                      Vec2 to,
                                                                      Vec2 targetVelocity = default,
@@ -37,9 +32,8 @@ public class Measurer
     {
         var nearestCollisionObject = GetCollisionObjectsOnMyWay(from, to);
 
-        var collisioned = nearestCollisionObject != null
-                          &&
-                          GetDistanceBetween(from.Position, to) >= GetDistanceBetween(to, nearestCollisionObject.Position);
+        var collisioned = nearestCollisionObject != null &&
+                          GetDistanceBetween(from.Position, to) > GetDistanceBetween(to, nearestCollisionObject.Position);
 
         var invertCoefficient = invertedVelocity
                                     ? -1
@@ -71,13 +65,13 @@ public class Measurer
                 var tb = new Vec2(r * -Math.Sin(t3),
                                   r * Math.Cos(t3));
 
-                realTarget = GetDistanceBetween(to, ta) <= GetDistanceBetween(to, tb)
+                realTarget = Math.Round(GetDistanceBetween(to, ta)) <= Math.Round(GetDistanceBetween(to, tb))
                                  ? new Vec2(ta.X + nearestCollisionObject.Position.X, ta.Y + nearestCollisionObject.Position.Y)
                                  : new Vec2(tb.X + nearestCollisionObject.Position.X, tb.Y + nearestCollisionObject.Position.Y);
                 DebugInterface.Add(new DebugData.PolyLine(new[] { realFrom, realTarget }, 0.3, CustomDebug.GreenColor));
             }
 
-            var angleSimple = (float)Math.Atan2(realTarget.Y - realFrom.Y, realTarget.X - realFrom.X);
+            var angleSimple = FindAngle(realFrom, realTarget);
             var velocitySimple = new Vec2
                                  {
                                      X = (realTarget.X - realFrom.X + Math.Cos(angleSimple) * 20) * invertCoefficient,
@@ -129,23 +123,6 @@ public class Measurer
         return (direction, velocity);
     }
 
-    public Vec2 GetRandomVec()
-    {
-        return new Vec2
-               {
-                   X = new Random().Next(-20, 20),
-                   Y = new Random().Next(-20, 20)
-               };
-    }
-
-    public Vec2 GetInvertedVec(Vec2 to)
-    {
-        return new Vec2
-               {
-                   X = -to.Y,
-                   Y = to.X
-               };
-    }
 
     public Vec2 GetZoneBorderPoint(CustomItem item)
     {
@@ -240,6 +217,11 @@ public class Measurer
         return null;
     }
 
+    public static double GetDistanceBetween(Vec2 a, Vec2 b)
+    {
+        return Math.Sqrt(Math.Pow(a.X - b.X, 2) + Math.Pow(a.Y - b.Y, 2));
+    }
+
     public float FindAngle(Vec2 point1, Vec2 point2)
     {
         return (float)Math.Atan2(point2.Y - point1.Y, point2.X - point1.X);
@@ -250,5 +232,23 @@ public class Measurer
         var angle = FindAngle(from, through);
         return new Vec2(from.X + Math.Cos(angle) * rayDistance,
                         from.Y + Math.Sin(angle) * rayDistance);
+    }
+
+    public Vec2 GetRandomVec()
+    {
+        return new Vec2
+               {
+                   X = new Random().Next(-20, 20),
+                   Y = new Random().Next(-20, 20)
+               };
+    }
+
+    public Vec2 GetInvertedVec(Vec2 to)
+    {
+        return new Vec2
+               {
+                   X = -to.Y,
+                   Y = to.X
+               };
     }
 }
