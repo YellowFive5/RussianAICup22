@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using System.Numerics;
 using AiCup22.CustomModel;
+using AiCup22.Debugging;
 using AiCup22.Model;
 
 #endregion
@@ -34,26 +35,47 @@ public class Measurer
                                                                      Vec2 targetVelocity = default,
                                                                      bool invertedVelocity = false)
     {
-        var nearestCollisionObject = World.Objects.Cast<CustomItem>()
-                                          .Union(World.MyTeammates)
-                                          .OrderBy(o => GetDistanceBetween(from.Position, o.Position))
-                                          .FirstOrDefault();
-        var collisionRadius = nearestCollisionObject.Radius + from.Radius * 1.0;
-        var collisioned = GetDistanceBetween(from.Position, nearestCollisionObject.Position) <= collisionRadius;
+        var nearestCollisionObject = GetCollisionObjectsOnMyWay(from, to);
 
-        var invertCoefficient = invertedVelocity && !collisioned
+        var collisioned = nearestCollisionObject != null
+                          &&
+                          GetDistanceBetween(from.Position, to) >= GetDistanceBetween(to, nearestCollisionObject.Position);
+
+        var invertCoefficient = invertedVelocity
                                     ? -1
                                     : 1;
 
         // Default - Simple
         if (targetVelocity.X == 0 && targetVelocity.Y == 0)
         {
-            var realFrom = !collisioned
-                               ? from.Position
-                               : nearestCollisionObject.Position;
-            var realTarget = !collisioned
-                                 ? to
-                                 : from.Position;
+            var realFrom = from.Position;
+            var realTarget = to;
+
+            if (collisioned)
+            {
+                var r = nearestCollisionObject.Radius + UnitRadius;
+                DebugInterface.Add(new DebugData.Ring(nearestCollisionObject.Position, r, 0.1, CustomDebug.VioletColor));
+
+                // var r = collisionRadius * 0.9;
+                var dx = nearestCollisionObject.Position.X - realFrom.X;
+                var dy = nearestCollisionObject.Position.Y - realFrom.Y;
+                var dd = Math.Sqrt(dx * dx + dy * dy);
+                var a1 = Math.Asin(r / dd);
+                var b1 = Math.Atan2(dy, dx);
+
+                var t3 = b1 - a1;
+                var ta = new Vec2(r * Math.Sin(t3),
+                                  r * -Math.Cos(t3));
+
+                t3 = b1 + a1;
+                var tb = new Vec2(r * -Math.Sin(t3),
+                                  r * Math.Cos(t3));
+
+                realTarget = GetDistanceBetween(to, ta) <= GetDistanceBetween(to, tb)
+                                 ? new Vec2(ta.X + nearestCollisionObject.Position.X, ta.Y + nearestCollisionObject.Position.Y)
+                                 : new Vec2(tb.X + nearestCollisionObject.Position.X, tb.Y + nearestCollisionObject.Position.Y);
+                DebugInterface.Add(new DebugData.PolyLine(new[] { realFrom, realTarget }, 0.3, CustomDebug.GreenColor));
+            }
 
             var angleSimple = (float)Math.Atan2(realTarget.Y - realFrom.Y, realTarget.X - realFrom.X);
             var velocitySimple = new Vec2
@@ -62,7 +84,7 @@ public class Measurer
                                      Y = (realTarget.Y - realFrom.Y + Math.Sin(angleSimple) * 20) * invertCoefficient
                                  };
 
-            var directionSimple = new Vec2(to.X - from.Position.X, to.Y - from.Position.Y);
+            var directionSimple = new Vec2(realTarget.X - realFrom.X, realTarget.Y - realFrom.Y);
 
             return (directionSimple, velocitySimple);
         }
@@ -180,5 +202,53 @@ public class Measurer
         }
 
         return true;
+    }
+
+    public CustomItem GetCollisionObjectsOnMyWay(CustomItem from, Vec2 to)
+    {
+        if (from == null)
+        {
+            return null;
+        }
+
+        var potentialCover = World.Objects.Cast<CustomItem>()
+                                  // .Union(World.AllUnits) // todo
+                                  .Where(o => GetDistanceBetween(from.Position, o.Position) <= 25)
+                                  .OrderBy(o => GetDistanceBetween(from.Position, o.Position));
+
+        var dpx = to.X - from.Position.X;
+        var dpy = to.Y - from.Position.Y;
+        var a = dpx * dpx + dpy * dpy;
+        foreach (var o in potentialCover)
+        {
+            var rad = o.Radius + UnitRadius * 2;
+            var b = 2 * (dpx * (from.Position.X - o.Position.X) + dpy * (from.Position.Y - o.Position.Y));
+            var c = o.Position.X * o.Position.X + o.Position.Y * o.Position.Y;
+            c += from.Position.X * from.Position.X + from.Position.Y * from.Position.Y;
+            c -= 2 * (o.Position.X * from.Position.X + o.Position.Y * from.Position.Y);
+            c -= rad * rad;
+            var bb4ac = b * b - 4 * a * c;
+            if (Math.Abs(a) < float.Epsilon || bb4ac < 0)
+            {
+            }
+            else
+            {
+                return o;
+            }
+        }
+
+        return null;
+    }
+
+    public float FindAngle(Vec2 point1, Vec2 point2)
+    {
+        return (float)Math.Atan2(point2.Y - point1.Y, point2.X - point1.X);
+    }
+
+    public Vec2 FindRayPoint(Vec2 from, Vec2 through, int rayDistance = 10)
+    {
+        var angle = FindAngle(from, through);
+        return new Vec2(from.X + Math.Cos(angle) * rayDistance,
+                        from.Y + Math.Sin(angle) * rayDistance);
     }
 }
