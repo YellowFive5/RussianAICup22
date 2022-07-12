@@ -122,7 +122,7 @@ namespace AiCup22
                 !Measurer.IsClearVisible(World.NearestEnemy, Me))
             {
                 // Heel
-                TakePotion();
+                TakePotion(!World.IsNearestEnemyVisible);
             }
         }
 
@@ -286,10 +286,13 @@ namespace AiCup22
             Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(smartAim.velocity, smartAim.direction, actionAim) }, };
         }
 
-        private void TakePotion()
+        private void TakePotion(bool turnAround = false)
         {
             var actionUseShieldPotion = new ActionOrder.UseShieldPotion();
-            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(Measurer.GetRandomVec(), Me.Direction, actionUseShieldPotion) }, };
+            var direction = turnAround
+                                ? Measurer.GetInvertedVec(Me.Direction)
+                                : Me.Direction;
+            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(Measurer.GetRandomVec(), direction, actionUseShieldPotion) }, };
         }
 
         #endregion
