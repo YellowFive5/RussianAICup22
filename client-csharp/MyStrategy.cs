@@ -210,12 +210,13 @@ namespace AiCup22
             }
 
             // Has distance and clear vision
-            if (Measurer.IsClearVisible(Me, World.NearestEnemy) &&
+            if (Measurer.IsDistanceAllowToHit(Me, World.NearestEnemy) &&
+                Measurer.IsClearVisible(Me, World.NearestEnemy) &&
                 Me.IsAimed)
             {
                 // Shoot
                 ComeToAim(World.NearestEnemy, true);
-                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "AttackEnemy/Measurer.IsClearVisible(Me, World.NearestEnemy)/ComeToAim(World.NearestEnemy, true, true))", new Vec2(), 2, CustomDebug.VioletColor));
+                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "AttackEnemy/Measurer.IsClearVisible(Me, World.NearestEnemy)/ComeToAim(World.NearestEnemy, true)", new Vec2(), 2, CustomDebug.VioletColor));
                 return;
             }
 

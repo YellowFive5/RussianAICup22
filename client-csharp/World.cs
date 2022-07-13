@@ -42,7 +42,10 @@ public class World
     public bool IsFarFromTeammate => HasAnyTeammates && Measurer.GetDistanceBetween(Me.Position, MyTeammates.First().Position) >= Constants.ViewDistance;
 
     public List<EnemyUnit> EnemyUnits { get; set; } = new();
-    public EnemyUnit NearestEnemy => EnemyUnits.OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
+
+    public EnemyUnit NearestEnemy => EnemyUnits.Where(e => !e.IsSpawning)
+                                               .OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
+
     public bool IsNearestEnemyVisible => NearestEnemy != null;
     public EnemyUnit NearestWeakestEnemy => EnemyUnits.OrderBy(e => e.HealthShieldPoints).FirstOrDefault();
 
