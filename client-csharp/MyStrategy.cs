@@ -12,53 +12,46 @@ namespace AiCup22
 {
     public class MyStrategy
     {
-        public Constants Constants { get; }
         private Measurer Measurer { get; set; }
-        private World World { get; set; }
-        private MyUnit Me { get; set; }
+        private World World { get; }
+        private MyUnit Me => World.Me;
         private DebugInterface DebugInterface { get; set; }
-        public List<MyUnit> MyUnits { get; set; } = new();
-        public Dictionary<int, UnitOrder> Commands { get; set; }
+        public Dictionary<int, UnitOrder> Command { get; set; }
+
+        private int playerTurn;
 
         public MyStrategy(Constants constants)
         {
-            Constants = constants;
             World = new World(constants);
         }
 
         public Order GetOrder(Game game, DebugInterface debugInterface)
         {
+            var players = game.Units.Count(u => u.PlayerId == game.MyId);
+            playerTurn = playerTurn >= players - 1
+                             ? 0
+                             : playerTurn + 1;
+
+
             // DebugInterface = debugInterface; // debug on
             DebugInterface = null; // debug off
 
-            Commands = new Dictionary<int, UnitOrder>();
-            MyUnits = new List<MyUnit>();
-            World = new World(Constants);
+            Command = new Dictionary<int, UnitOrder>();
+
             Measurer = new Measurer(World, DebugInterface);
 
-            foreach (var unit in game.Units)
-            {
-                if (unit.PlayerId == game.MyId)
-                {
-                    MyUnits.Add(new MyUnit(unit, Constants));
-                }
-            }
+            World.Scan(game, playerTurn);
 
-            foreach (var me in MyUnits)
-            {
-                Me = me;
-                World.Scan(game, me);
-                ChooseAction();
-            }
+            ChooseAction();
 
-            return new Order(Commands);
+            return new Order(Command);
         }
 
         private void ChooseAction()
         {
             // DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, World.Me.Potions.ToString(), new Vec2(), 5, CustomDebug.VioletColor));
-            // DebugInterface?.Add(new DebugData.Ring(World.NearestSniperAmmoLoot.Position, 2, 2, CustomDebug.VioletColor));
-            // DebugInterface?.Add(new DebugData.PolyLine(new[] { new Vec2(50,100), new Vec2(0,50) }, 5, CustomDebug.GreenColor));
+            // DebugInterface.Add(new DebugData.Ring(World.NearestSniperAmmoLoot.Position, 2, 2, CustomDebug.VioletColor));
+            // DebugInterface.Add(new DebugData.PolyLine(new[] { new Vec2(50,100), new Vec2(0,50) }, 5, CustomDebug.GreenColor));
 
             ReturnInWhiteZone();
 
@@ -71,12 +64,11 @@ namespace AiCup22
             GoToTarget();
         }
 
-
         #region Behaviour
 
         private void ReturnInWhiteZone()
         {
-            if (Commands.Any(c => c.Key == Me.Id))
+            if (Command.Any())
             {
                 return;
             }
@@ -90,7 +82,7 @@ namespace AiCup22
 
         private void Heel()
         {
-            if (Commands.Any(c => c.Key == Me.Id))
+            if (Command.Any())
             {
                 return;
             }
@@ -103,7 +95,7 @@ namespace AiCup22
             if (Me.IsShieldEmpty)
             {
                 // Heel
-                TakePotion(World.IsNearestEnemyVisible);
+                TakePotion();
                 DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "Heel/Me.IsShieldEmpty/TakePotion())", new Vec2(), 2, CustomDebug.VioletColor));
                 return;
             }
@@ -113,28 +105,13 @@ namespace AiCup22
                 !Measurer.IsClearVisible(World.NearestEnemy, Me))
             {
                 // Heel
-                TakePotion(World.IsNearestEnemyVisible);
+                TakePotion(!World.IsNearestEnemyVisible);
                 DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "Heel/IsDistanceAllowToHit/TakePotion())", new Vec2(), 2, CustomDebug.VioletColor));
             }
         }
 
         private void ProcessItems()
         {
-            if (Me.IsPotionsEmpty && Me.IsAmmoEmpty)
-            {
-                if (World.IsNearestShieldLootItemVisible && World.IsNearestActiveAmmoVisible())
-                {
-                    if (Measurer.GetDistanceBetween(World.NearestShieldLootItem.Position, Me.Position) < Measurer.GetDistanceBetween(World.GetNearestActiveAmmoLoot().Position, Me.Position))
-                    {
-                        CollectPotions();
-                        return;
-                    }
-
-                    CollectAmmo();
-                    return;
-                }
-            }
-
             if (Me.IsPotionsEmpty)
             {
                 CollectPotions();
@@ -169,7 +146,7 @@ namespace AiCup22
 
         private void CollectPotions()
         {
-            if (Commands.Any(c => c.Key == Me.Id))
+            if (Command.Any())
             {
                 return;
             }
@@ -194,7 +171,7 @@ namespace AiCup22
 
         private void CollectAmmo()
         {
-            if (Commands.Any(c => c.Key == Me.Id))
+            if (Command.Any())
             {
                 return;
             }
@@ -219,7 +196,7 @@ namespace AiCup22
 
         private void ChangeWeapon()
         {
-            if (Commands.Any(c => c.Key == Me.Id))
+            if (Command.Any())
             {
                 return;
             }
@@ -257,7 +234,7 @@ namespace AiCup22
 
         private void AttackEnemy()
         {
-            if (Commands.Any(c => c.Key == Me.Id))
+            if (Command.Any())
             {
                 return;
             }
@@ -279,29 +256,18 @@ namespace AiCup22
                 return;
             }
 
-            if (Measurer.IsDistanceAllowToHit(Me, World.NearestEnemy))
+            if (Measurer.IsDistanceAllowToHit(Me, World.NearestEnemy) && !Me.IsAimed)
             {
                 // Aim
                 ComeToAim(World.NearestEnemy);
                 DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "AttackEnemy/ComeToAim(World.NearestEnemy)", new Vec2(), 2, CustomDebug.VioletColor));
-                return;
             }
-
-            GoTo(World.NearestEnemy);
-            DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "AttackEnemy/GoTo(World.NearestEnemy);", new Vec2(), 2, CustomDebug.VioletColor));
         }
 
         private void GoToTarget()
         {
-            if (Commands.Any(c => c.Key == Me.Id))
+            if (Command.Any())
             {
-                return;
-            }
-
-            if (World.IsFarFromTeammate)
-            {
-                GoTo(World.MyTeammates.First());
-                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "GoToTarget/GoTo(World.MyTeammates.First()))", new Vec2(), 2, CustomDebug.VioletColor));
                 return;
             }
 
@@ -317,45 +283,46 @@ namespace AiCup22
         {
             var movement = Measurer.GetSmartDirectionVelocity(Me, unit.Position, unit.Velocity);
             var actionAim = new ActionOrder.Aim(withShoot);
-
-            Commands.Add(Me.Id, new UnitOrder(Measurer.GetRandomVec(), movement.direction, actionAim));
+            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(Measurer.GetRandomVec(), movement.direction, actionAim) }, };
         }
 
         private void GoPickup(CustomItem item)
         {
             var movement = Measurer.GetSmartDirectionVelocity(Me, item.Position);
             var actionPickup = new ActionOrder.Pickup(item.Id);
-            Commands.Add(Me.Id, new UnitOrder(movement.velocity, movement.direction, actionPickup));
+            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(movement.velocity, movement.direction, actionPickup) }, };
         }
 
         private void GoTo(CustomUnit unit)
         {
-            var movement = Measurer.GetSmartDirectionVelocity(Me, unit.Position);
-            Commands.Add(Me.Id, new UnitOrder(movement.velocity, movement.direction, null));
+            var movement = Measurer.GetSmartDirectionVelocity(Me, unit.Position, unit.Velocity);
+            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(movement.velocity, movement.direction, null) }, };
         }
 
         private void GoTo(Vec2 point)
         {
             var movement = Measurer.GetSmartDirectionVelocity(Me, point);
-            Commands.Add(Me.Id, new UnitOrder(movement.velocity, Measurer.GetInvertedVec(Me.Direction), null));
+            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(movement.velocity, Measurer.GetInvertedVec(Me.Direction), null) }, };
         }
 
         private void ComeToAim(CustomUnit unit, bool withShot = false)
         {
             var smartAim = Measurer.GetSmartDirectionVelocity(Me, unit.Position, unit.Velocity);
-            var velocity = Measurer.GetBulletsDodgeVelocity(Me, unit);
 
+            var velocity = withShot
+                               ? Measurer.GetWiggleVelocity(Me.Direction)
+                               : smartAim.velocity;
             var actionAim = new ActionOrder.Aim(withShot);
-            Commands.Add(Me.Id, new UnitOrder(velocity, smartAim.direction, actionAim));
+            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(velocity, smartAim.direction, actionAim) }, };
         }
 
-        private void TakePotion(bool isNearestEnemyVisible)
+        private void TakePotion(bool turnAround = false)
         {
             var actionUseShieldPotion = new ActionOrder.UseShieldPotion();
-            Commands.Add(Me.Id,
-                         isNearestEnemyVisible
-                             ? new UnitOrder(Measurer.GetBulletsDodgeVelocity(Me, World.NearestEnemy), World.NearestEnemy.Position, actionUseShieldPotion)
-                             : new UnitOrder(Measurer.GetWiggleVelocity(Me.Direction), Measurer.GetInvertedVec(Me.Direction), actionUseShieldPotion));
+            var direction = turnAround
+                                ? Measurer.GetInvertedVec(Me.Direction)
+                                : Me.Direction;
+            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(Measurer.GetWiggleVelocity(Me.Direction), direction, actionUseShieldPotion) }, };
         }
 
         #endregion
