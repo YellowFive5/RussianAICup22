@@ -23,7 +23,7 @@ public static class Program
         var testResultsFile = $"{runnerDir}/../TestResults.txt";
         var testIterations = 500;
         var instances = 50;
-        
+
         // Linux
         // var runnerDir = @"/home/yellowfive/OneDrive/MY/#CODE/#RussianAiCup/'22/app-linux";
         // var runnerExe = @"/home/yellowfive/OneDrive/MY/#CODE/#RussianAiCup/'22/app-linux/aicup22";
@@ -46,6 +46,7 @@ public static class Program
                                                                 });
                                           p.WaitForExitAsync().Wait();
                                       });
+            Console.WriteLine($"- - - - {testIterations / instances * i} / 500 - - - - ");
         }
 
         var kills = new List<double>();
