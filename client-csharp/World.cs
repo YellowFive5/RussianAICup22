@@ -39,7 +39,7 @@ public class World
     public List<MyUnit> MyTeammates => MyUnits.Where(u => u.Id != Me.Id).ToList();
     public bool HasAnyTeammates => MyTeammates.Any();
 
-    public bool IsFarFromTeammate => HasAnyTeammates && Measurer.GetDistanceBetween(Me.Position, MyTeammates.First().Position) >= Constants.ViewDistance;
+    public bool IsFarFromTeammate => HasAnyTeammates && Measurer.GetDistanceBetween(Me.Position, MyTeammates.First().Position) >= Constants.ViewDistance * 0.8;
 
     public List<EnemyUnit> EnemyUnits { get; set; } = new();
 
@@ -69,6 +69,14 @@ public class World
     #endregion
 
     #region Items
+
+    public List<ShieldLootItem> ShieldItems { get; set; } = new();
+
+    public ShieldLootItem NearestShieldLootItem => ShieldItems.OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position))
+                                                              .FirstOrDefault();
+
+    public bool IsNearestShieldLootItemVisible => NearestShieldLootItem != null;
+
 
     public List<WeaponLootItem> WeaponItems { get; set; } = new();
 
@@ -124,14 +132,6 @@ public class World
                 throw new ArgumentOutOfRangeException();
         }
     }
-
-
-    public List<ShieldLootItem> ShieldItems { get; set; } = new();
-
-    public ShieldLootItem NearestShieldLootItem => ShieldItems.OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position))
-                                                              .FirstOrDefault();
-
-    public bool IsNearestShieldLootItemVisible => NearestShieldLootItem != null;
 
     #endregion
 

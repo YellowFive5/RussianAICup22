@@ -57,10 +57,10 @@ namespace AiCup22
         private void ChooseAction()
         {
             // DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, World.Me.Potions.ToString(), new Vec2(), 5, CustomDebug.VioletColor));
-            // DebugInterface.Add(new DebugData.Ring(World.NearestSniperAmmoLoot.Position, 2, 2, CustomDebug.VioletColor));
-            // DebugInterface.Add(new DebugData.PolyLine(new[] { new Vec2(50,100), new Vec2(0,50) }, 5, CustomDebug.GreenColor));
+            // DebugInterface?.Add(new DebugData.Ring(World.NearestSniperAmmoLoot.Position, 2, 2, CustomDebug.VioletColor));
+            // DebugInterface?.Add(new DebugData.PolyLine(new[] { new Vec2(50,100), new Vec2(0,50) }, 5, CustomDebug.GreenColor));
 
-            ReturnInZone();
+            ReturnInWhiteZone();
 
             Heel();
 
@@ -71,19 +71,13 @@ namespace AiCup22
             GoToTarget();
         }
 
+
         #region Behaviour
 
-        private void ReturnInZone()
+        private void ReturnInWhiteZone()
         {
             if (Commands.Any(c => c.Key == Me.Id))
             {
-                return;
-            }
-
-            if (World.IsFarFromTeammate)
-            {
-                GoTo(World.MyTeammates.First());
-                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "ReturnInZone/GoTo(World.MyTeammates.First()))", new Vec2(), 2, CustomDebug.VioletColor));
                 return;
             }
 
@@ -267,6 +261,13 @@ namespace AiCup22
         {
             if (Commands.Any(c => c.Key == Me.Id))
             {
+                return;
+            }
+
+            if (World.IsFarFromTeammate)
+            {
+                GoTo(World.MyTeammates.First());
+                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "GoToTarget/GoTo(World.MyTeammates.First()))", new Vec2(), 2, CustomDebug.VioletColor));
                 return;
             }
 

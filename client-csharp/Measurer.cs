@@ -31,14 +31,16 @@ public class Measurer
     {
         var nearestCollisionObject = GetNearestCollisionObjectOnMyWay(from, to);
 
-        // var collisioned = Math.Round(GetDistanceBetween(from.Position, to)) >= Math.Round(GetDistanceBetween(to, nearestCollisionObject.Position)); //todo temp off
+        // var collisioned = nearestCollisionObject != null &&
+        //                   !from.IsSpawning &&
+        //                   Math.Round(GetDistanceBetween(from.Position, to)) >= Math.Round(GetDistanceBetween(to, nearestCollisionObject.Position)); //todo temp off
         var collisioned = false;
 
         var invertCoefficient = invertedVelocity
                                     ? -1
                                     : 1;
 
-        // Default - Simple
+        // Default - to object move
         if (targetVelocity.X == 0 && targetVelocity.Y == 0)
         {
             var realFrom = from.Position;
@@ -72,6 +74,18 @@ public class Measurer
             }
 
             var angleSimple = FindAngle(realFrom, realTarget);
+            // var velocitySimple = !from.IsSpawning // ease come
+            //                          ? new Vec2
+            //                            {
+            //                                X = (realTarget.X - realFrom.X + Math.Cos(angleSimple) * 20) * invertCoefficient,
+            //                                Y = (realTarget.Y - realFrom.Y + Math.Sin(angleSimple) * 20) * invertCoefficient
+            //                            }
+            //                          : new Vec2
+            //                            {
+            //                                X = (realTarget.X - realFrom.X) * invertCoefficient,
+            //                                Y = (realTarget.Y - realFrom.Y) * invertCoefficient,
+            //                            }; //todo temp off
+
             var velocitySimple = new Vec2
                                  {
                                      X = (realTarget.X - realFrom.X + Math.Cos(angleSimple) * 20) * invertCoefficient,
@@ -83,7 +97,7 @@ public class Measurer
             return (directionSimple, velocitySimple);
         }
 
-        // Smart
+        // Smart - with ...
         var vectorFrom = new Vector2((float)from.Position.X, (float)from.Position.Y);
         var vectorTo = new Vector2((float)to.X, (float)to.Y);
         var vectorToVelocity = new Vector2((float)targetVelocity.X, (float)targetVelocity.Y);
@@ -183,14 +197,14 @@ public class Measurer
 
     public CustomItem GetNearestCollisionObjectOnMyWay(CustomUnit from, Vec2 to)
     {
-        if (from == null || from.IsSpawning)
+        if (from == null)
         {
             return null;
         }
 
         var potentialCover = World.Objects.Cast<CustomItem>()
                                   .Where(o => GetDistanceBetween(from.Position, o.Position) <= 25)
-                                  // .Union(World.MyTeammates) // todo temp
+                                  .Union(World.MyTeammates) // todo temp
                                   .OrderBy(o => GetDistanceBetween(from.Position, o.Position));
 
         var dpx = to.X - from.Position.X;
