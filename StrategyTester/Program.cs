@@ -45,7 +45,7 @@ public static class Program
                                                                     WorkingDirectory = runnerDir
                                                                 });
                                           p.WaitForExitAsync().Wait();
-                                          Console.WriteLine($"- - - - ~{instances * ft} / 500 - - - - ");
+                                          Console.WriteLine($"- - - - ~{instances * (ft + 1)} / 500 - - - - ");
                                       });
         }
 
