@@ -61,16 +61,13 @@ public class Measurer
                 var tb = new Vec2(r * -Math.Sin(t3),
                                   r * Math.Cos(t3));
 
-                // realTarget = Math.Round(GetDistanceBetween(to, ta)) <= Math.Round(GetDistanceBetween(to, tb))
+                // realTarget = World.Game.CurrentTick / 30 % 2 == 0
                 //                  ? new Vec2(ta.X + nearestCollisionObject.Position.X, ta.Y + nearestCollisionObject.Position.Y)
                 //                  : new Vec2(tb.X + nearestCollisionObject.Position.X, tb.Y + nearestCollisionObject.Position.Y);
-                //
-                // realTarget = new Vec2(tb.X + nearestCollisionObject.Position.X, tb.Y + nearestCollisionObject.Position.Y);
-                // todo
-                realTarget = new Vec2(ta.X + nearestCollisionObject.Position.X, ta.Y + nearestCollisionObject.Position.Y);
 
-                // DebugInterface.Add(new DebugData.Ring(nearestCollisionObject.Position, r, 0.1, CustomDebug.VioletColor));
-                // DebugInterface.Add(new DebugData.PolyLine(new[] { realFrom, realTarget }, 0.3, CustomDebug.GreenColor));
+                realTarget = new Vec2(ta.X + nearestCollisionObject.Position.X, ta.Y + nearestCollisionObject.Position.Y);
+                // DebugInterface?.Add(new DebugData.Ring(nearestCollisionObject.Position, r, 0.1, CustomDebug.VioletColor));
+                // DebugInterface?.Add(new DebugData.PolyLine(new[] { realFrom, realTarget }, 0.3, CustomDebug.GreenColor));
             }
 
             var angleSimple = FindAngle(realFrom, realTarget);
@@ -251,11 +248,10 @@ public class Measurer
         //
         // Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(smartAim, Me.Direction, actionAim) }, };
 
-        var angles = new[] { 90, 270 };
         const double degToRad = Math.PI / 180;
         var angle = World.Game.CurrentTick / 15 % 3 == 0
-                        ? angles[0]
-                        : angles[1];
+                        ? 90
+                        : 270;
         var ca = Math.Cos(angle * degToRad);
         var sa = Math.Sin(angle * degToRad);
         return new Vec2
