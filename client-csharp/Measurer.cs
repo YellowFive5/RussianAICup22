@@ -31,7 +31,8 @@ public class Measurer
     {
         var nearestCollisionObject = GetCollisionObjectsOnMyWay(from, to);
 
-        var collisioned = nearestCollisionObject != null && Math.Round(GetDistanceBetween(from.Position, to)) >= Math.Round(GetDistanceBetween(to, nearestCollisionObject.Position));
+        // var collisioned = nearestCollisionObject != null && Math.Round(GetDistanceBetween(from.Position, to)) >= Math.Round(GetDistanceBetween(to, nearestCollisionObject.Position)); //todo temp off
+        var collisioned = false;
 
         var invertCoefficient = invertedVelocity
                                     ? -1
@@ -188,8 +189,9 @@ public class Measurer
         }
 
         var potentialCover = World.Objects.Cast<CustomItem>()
-                                  // .Union(World.AllUnits) // todo
                                   .Where(o => GetDistanceBetween(from.Position, o.Position) <= 25)
+                                  // .Union(World.MyTeammates
+                                  //             .Where(t => GetDistanceBetween(from.Position, t.Position) <= UnitRadius)) // todo
                                   .OrderBy(o => GetDistanceBetween(from.Position, o.Position));
 
         var dpx = to.X - from.Position.X;

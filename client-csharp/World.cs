@@ -64,7 +64,11 @@ public class World
     #region Items
 
     public List<WeaponLootItem> WeaponItems { get; set; } = new();
-    public WeaponLootItem NearestPistol => WeaponItems.Where(e => e.Type == WeaponLootItem.WeaponType.Pistol).OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
+
+    public WeaponLootItem NearestPistol => WeaponItems.Where(e => e.Type == WeaponLootItem.WeaponType.Pistol)
+                                                      .OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position))
+                                                      .FirstOrDefault();
+
     public bool IsNearestPistolVisible => NearestPistol != null;
     public WeaponLootItem NearestRifle => WeaponItems.Where(e => e.Type == WeaponLootItem.WeaponType.Rifle).OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
     public bool IsNearestRifleVisible => NearestRifle != null;
@@ -116,7 +120,10 @@ public class World
 
 
     public List<ShieldLootItem> ShieldItems { get; set; } = new();
-    public ShieldLootItem NearestShieldLootItem => ShieldItems.OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
+
+    public ShieldLootItem NearestShieldLootItem => ShieldItems.OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position))
+                                                              .FirstOrDefault();
+
     public bool IsNearestShieldLootItemVisible => NearestShieldLootItem != null;
 
     #endregion
@@ -149,7 +156,7 @@ public class World
         Constants = constants;
     }
 
-    public void Scan(Game game, int playerTurn)
+    public void Scan(Game game, MyUnit me)
     {
         Game = game;
         ZoneCenter = game.Zone.CurrentCenter;
@@ -171,7 +178,7 @@ public class World
             }
         }
 
-        Me = MyUnits.ElementAt(playerTurn);
+        Me = me;
 
         OutOfZone = Measurer.GetDistanceBetween(ZoneCenter, Me.Position) >= game.Zone.CurrentRadius;
         NearToOutOfZone = Measurer.GetDistanceBetween(ZoneCenter, Me.Position) >= game.Zone.CurrentRadius * 0.97;

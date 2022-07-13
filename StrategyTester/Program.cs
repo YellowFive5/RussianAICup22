@@ -40,7 +40,8 @@ public static class Program
                                       {
                                           var p = Process.Start(new ProcessStartInfo(runnerExe)
                                                                 {
-                                                                    Arguments = $"--config {runnerDir}/../StrategyTester/configs/config({i}).json --batch-mode --save-results ../StrategyTester/{Guid.NewGuid()}.json",
+                                                                    // Arguments = $"--config {runnerDir}/../StrategyTester/configs/config({i}).json --batch-mode --save-results ../StrategyTester/{Guid.NewGuid()}.json",
+                                                                    Arguments = $"--config {runnerDir}/../StrategyTester/configs2/config({i}).json --batch-mode --save-results ../StrategyTester/{Guid.NewGuid()}.json",
                                                                     WorkingDirectory = runnerDir
                                                                 });
                                           p.WaitForExitAsync().Wait();
