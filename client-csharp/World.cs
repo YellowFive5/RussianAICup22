@@ -159,6 +159,8 @@ public class World
     public void Scan(Game game, MyUnit me)
     {
         Game = game;
+        Me = me;
+
         ZoneCenter = game.Zone.CurrentCenter;
         ZoneRadius = game.Zone.CurrentRadius;
         ZoneNextCenter = game.Zone.NextCenter;
@@ -177,8 +179,6 @@ public class World
                 EnemyUnits.Add(new EnemyUnit(unit, Constants));
             }
         }
-
-        Me = me;
 
         OutOfZone = Measurer.GetDistanceBetween(ZoneCenter, Me.Position) >= game.Zone.CurrentRadius;
         NearToOutOfZone = Measurer.GetDistanceBetween(ZoneCenter, Me.Position) >= game.Zone.CurrentRadius * 0.97;

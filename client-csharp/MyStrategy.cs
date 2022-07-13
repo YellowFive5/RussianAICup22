@@ -15,12 +15,9 @@ namespace AiCup22
         public Constants Constants { get; }
         private Measurer Measurer { get; set; }
         private World World { get; set; }
-
         private MyUnit Me { get; set; }
-
         private DebugInterface DebugInterface { get; set; }
         public List<MyUnit> MyUnits { get; set; } = new();
-
         public Dictionary<int, UnitOrder> Commands { get; set; }
 
         public MyStrategy(Constants constants)

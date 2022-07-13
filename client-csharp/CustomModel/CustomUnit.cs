@@ -11,6 +11,7 @@ public abstract class CustomUnit : CustomItem
     public Unit Unit { get; }
     public Vec2 Velocity { get; }
     public Vec2 Direction { get; }
+    public bool IsSpawning => Unit.RemainingSpawnTime == null;
     public double Health { get; }
     public bool IsHealthDamaged => Health <= Constants.UnitHealth * 0.85;
     public bool IsHealthInjured => Health <= Constants.UnitHealth * 0.5;
