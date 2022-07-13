@@ -195,14 +195,6 @@ namespace AiCup22
                 return;
             }
 
-            // No distance to hit - came to
-            if (!Measurer.IsDistanceAllowToHit(Me, World.NearestEnemy))
-            {
-                GoTo(World.NearestEnemy);
-                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "AttackEnemy/!Measurer.IsDistanceAllowToHit(Me, World.NearestEnemy)/GoTo(World.NearestEnemy))", new Vec2(), 2, CustomDebug.VioletColor));
-                return;
-            }
-
             // Has distance and clear vision
             if (Measurer.IsClearVisible(Me, World.NearestEnemy) &&
                 Me.IsAimed)
