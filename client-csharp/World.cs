@@ -77,12 +77,9 @@ public class World
 
     public bool IsNearestShieldLootItemVisible => NearestShieldLootItem != null;
 
-
     public List<WeaponLootItem> WeaponItems { get; set; } = new();
 
-    public WeaponLootItem NearestPistol => WeaponItems.Where(e => e.Type == WeaponLootItem.WeaponType.Pistol)
-                                                      .OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position))
-                                                      .FirstOrDefault();
+    public WeaponLootItem NearestPistol => WeaponItems.Where(e => e.Type == WeaponLootItem.WeaponType.Pistol).OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
 
     public bool IsNearestPistolVisible => NearestPistol != null;
     public WeaponLootItem NearestRifle => WeaponItems.Where(e => e.Type == WeaponLootItem.WeaponType.Rifle).OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
@@ -131,6 +128,44 @@ public class World
             default:
                 throw new ArgumentOutOfRangeException();
         }
+    }
+
+    public CustomItem GetNearestItemToLoot()
+    {
+        var nearestCollectibles = new List<CustomItem>();
+        if (IsNearestShieldLootItemVisible)
+        {
+            nearestCollectibles.Add(NearestShieldLootItem);
+        }
+
+        if (IsNearestActiveAmmoVisible())
+        {
+            nearestCollectibles.Add(GetNearestActiveAmmoLoot());
+        }
+
+        switch (Me.WeaponType)
+        {
+            case WeaponLootItem.WeaponType.Pistol:
+            {
+                if (IsNearestSniperVisible)
+                {
+                    nearestCollectibles.Add(NearestSniper);
+                }
+
+                if (IsNearestRifleVisible)
+                {
+                    nearestCollectibles.Add(NearestRifle);
+                }
+
+                break;
+            }
+            case WeaponLootItem.WeaponType.Rifle when IsNearestSniperVisible:
+                nearestCollectibles.Add(NearestSniper);
+                break;
+        }
+
+        return nearestCollectibles.OrderBy(nc => Measurer.GetDistanceBetween(nc.Position, Me.Position))
+                                  .FirstOrDefault();
     }
 
     #endregion

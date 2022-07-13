@@ -132,12 +132,24 @@ namespace AiCup22
                 return;
             }
 
-            // NormalOrder
-            CollectPotions();
+            var itemToLoot = World.GetNearestItemToLoot();
+            if (itemToLoot == null)
+            {
+                return;
+            }
 
-            CollectAmmo();
-
-            ChangeWeapon();
+            switch (itemToLoot)
+            {
+                case ShieldLootItem:
+                    CollectPotions();
+                    return;
+                case AmmoLootItem:
+                    CollectAmmo();
+                    return;
+                case WeaponLootItem:
+                    ChangeWeapon();
+                    break;
+            }
         }
 
         private void CollectPotions()
@@ -190,35 +202,6 @@ namespace AiCup22
             }
         }
 
-        private void AttackEnemy()
-        {
-            if (Commands.Any(c => c.Key == Me.Id))
-            {
-                return;
-            }
-
-            // See anyone and have ammo
-            if (!World.IsNearestEnemyVisible || Me.IsAmmoEmpty)
-            {
-                return;
-            }
-
-            // Has distance and clear vision
-            if (Measurer.IsDistanceAllowToHit(Me, World.NearestEnemy) &&
-                Measurer.IsClearVisible(Me, World.NearestEnemy) &&
-                Me.IsAimed)
-            {
-                // Shoot
-                ComeToAim(World.NearestEnemy, true);
-                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "AttackEnemy/Measurer.IsClearVisible(Me, World.NearestEnemy)/ComeToAim(World.NearestEnemy, true)", new Vec2(), 2, CustomDebug.VioletColor));
-                return;
-            }
-
-            // Aim
-            ComeToAim(World.NearestEnemy);
-            DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "AttackEnemy/ComeToAim(World.NearestEnemy)", new Vec2(), 2, CustomDebug.VioletColor));
-        }
-
         private void ChangeWeapon()
         {
             if (Commands.Any(c => c.Key == Me.Id))
@@ -226,7 +209,7 @@ namespace AiCup22
                 return;
             }
 
-            if (Measurer.IsDistanceAllowToHit(World.NearestEnemy, Me, 0.9) &&
+            if (Measurer.IsDistanceAllowToHit(World.NearestEnemy, Me) &&
                 Measurer.IsClearVisible(World.NearestEnemy, Me))
             {
                 return;
@@ -254,6 +237,38 @@ namespace AiCup22
             {
                 GoPickup(World.NearestSniper);
                 DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "ChangeWeapon/Me.WeaponType/GoPickup(World.NearestSniper);", new Vec2(), 2, CustomDebug.VioletColor));
+            }
+        }
+
+        private void AttackEnemy()
+        {
+            if (Commands.Any(c => c.Key == Me.Id))
+            {
+                return;
+            }
+
+            // See anyone and have ammo
+            if (!World.IsNearestEnemyVisible || Me.IsAmmoEmpty)
+            {
+                return;
+            }
+
+            // Has distance and clear vision
+            if (Measurer.IsDistanceAllowToHit(Me, World.NearestEnemy) &&
+                Measurer.IsClearVisible(Me, World.NearestEnemy) &&
+                Me.IsAimed)
+            {
+                // Shoot
+                ComeToAim(World.NearestEnemy, true);
+                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "AttackEnemy/Measurer.IsClearVisible(Me, World.NearestEnemy)/ComeToAim(World.NearestEnemy, true)", new Vec2(), 2, CustomDebug.VioletColor));
+                return;
+            }
+
+            if (Measurer.IsDistanceAllowToHit(Me, World.NearestEnemy) && !Me.IsAimed)
+            {
+                // Aim
+                ComeToAim(World.NearestEnemy);
+                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "AttackEnemy/ComeToAim(World.NearestEnemy)", new Vec2(), 2, CustomDebug.VioletColor));
             }
         }
 

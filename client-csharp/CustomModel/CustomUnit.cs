@@ -29,7 +29,7 @@ public abstract class CustomUnit : CustomItem
     public WeaponLootItem.WeaponType WeaponType { get; }
     public int Ammo { get; }
     public bool IsAmmoFull => Ammo >= Constants.Weapons[(int)WeaponType].MaxInventoryAmmo;
-    public bool NeedToCollectAmmo => Ammo <= Constants.Weapons[(int)WeaponType].MaxInventoryAmmo * 0.50;
+    public bool NeedToCollectAmmo => Ammo <= Constants.Weapons[(int)WeaponType].MaxInventoryAmmo * 0.5;
     public bool IsAmmoEmpty => Ammo <= 0;
 
     public Action? Action { get; }
