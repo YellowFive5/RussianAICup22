@@ -32,7 +32,7 @@ public static class Program
         // var testIterations = 500;
         // var instances = 20;
 
-        for (var i = 0; i < testIterations / instances; i++)
+        for (var ft = 0; ft < testIterations / instances; ft++)
         {
             var result = Parallel.For(0,
                                       instances,
@@ -45,8 +45,8 @@ public static class Program
                                                                     WorkingDirectory = runnerDir
                                                                 });
                                           p.WaitForExitAsync().Wait();
+                                          Console.WriteLine($"- - - - ~{instances * ft} / 500 - - - - ");
                                       });
-            Console.WriteLine($"- - - - {testIterations / instances * i} / 500 - - - - ");
         }
 
         var kills = new List<double>();
