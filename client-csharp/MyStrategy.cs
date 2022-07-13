@@ -200,7 +200,7 @@ namespace AiCup22
                 Me.IsAimed)
             {
                 // Shoot
-                ComeToAim(World.NearestEnemy, true, true);
+                ComeToAim(World.NearestEnemy, true);
                 DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "AttackEnemy/Measurer.IsClearVisible(Me, World.NearestEnemy)/ComeToAim(World.NearestEnemy, true, true))", new Vec2(), 2, CustomDebug.VioletColor));
                 return;
             }
@@ -289,9 +289,10 @@ namespace AiCup22
             Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(movement.velocity, Measurer.GetInvertedVec(Me.Direction), null) }, };
         }
 
-        private void ComeToAim(CustomUnit unit, bool withShot = false, bool inverted = false)
+        private void ComeToAim(CustomUnit unit, bool withShot = false)
         {
-            var smartAim = Measurer.GetSmartDirectionVelocity(Me, unit.Position, unit.Velocity, inverted);
+            var smartAim = Measurer.GetSmartDirectionVelocity(Me, unit.Position, unit.Velocity);
+
             var velocity = withShot
                                ? Measurer.GetWiggleVelocity(Me.Direction)
                                : smartAim.velocity;
