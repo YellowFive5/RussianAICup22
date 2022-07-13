@@ -322,7 +322,7 @@ namespace AiCup22
             var direction = turnAround
                                 ? Measurer.GetInvertedVec(Me.Direction)
                                 : Me.Direction;
-            Commands.Add(Me.Id, new UnitOrder(Measurer.GetWiggleVelocity(Me.Direction, true), direction, actionUseShieldPotion));
+            Commands.Add(Me.Id, new UnitOrder(Measurer.GetWiggleVelocity(Me.Direction), direction, actionUseShieldPotion));
         }
 
         #endregion
