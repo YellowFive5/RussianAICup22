@@ -30,7 +30,8 @@ public class World
 
     public MyUnit Me { get; set; }
     public bool OutOfZone => Measurer.GetDistanceBetween(ZoneCenter, Me.Position) >= Game.Zone.CurrentRadius;
-    public bool NearToOutOfZone => Measurer.GetDistanceBetween(ZoneCenter, Me.Position) >= Game.Zone.CurrentRadius * 0.97;
+    public bool NearToOutOfZone => Measurer.GetDistanceBetween(ZoneCenter, Me.Position) >= Game.Zone.CurrentRadius * NearToOutOfZoneCoefficient;
+    public double NearToOutOfZoneCoefficient => 0.980;
 
     public List<CustomUnit> AllUnits => MyUnits.Cast<CustomUnit>()
                                                .Union(EnemyUnits).ToList();
@@ -220,7 +221,7 @@ public class World
         WeaponItems = new List<WeaponLootItem>();
         AmmoItems = new List<AmmoLootItem>();
         ShieldItems = new List<ShieldLootItem>();
-        foreach (var loot in game.Loot.Where(l => Measurer.GetDistanceBetween(game.Zone.CurrentCenter, l.Position) < game.Zone.CurrentRadius))
+        foreach (var loot in game.Loot.Where(l => Measurer.GetDistanceBetween(game.Zone.CurrentCenter, l.Position) < game.Zone.CurrentRadius * NearToOutOfZoneCoefficient))
         {
             switch (loot.Item)
             {
