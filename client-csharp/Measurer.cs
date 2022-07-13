@@ -233,7 +233,7 @@ public class Measurer
                         from.Y + Math.Sin(angle) * rayDistance);
     }
 
-    public Vec2 GetWiggleVelocity(Vec2 from)
+    public Vec2 GetWiggleVelocity(Vec2 from, bool fourSides = false)
     {
         // var normaized = new Vec2(Me.Direction.X + Me.Position.X, Me.Direction.Y + Me.Position.Y);
         // var p = Measurer.FindRayPoint(Me.Position, normaized);
@@ -249,9 +249,21 @@ public class Measurer
         // Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(smartAim, Me.Direction, actionAim) }, };
 
         const double degToRad = Math.PI / 180;
-        var angle = World.Game.CurrentTick / 15 % 3 == 0
+        int angle;
+
+        if (fourSides && World.Game.CurrentTick / 30 % 2 == 0)
+        {
+            angle = World.Game.CurrentTick / 15 % 3 == 0
+                        ? 0
+                        : 180;
+        }
+        else
+        {
+            angle = World.Game.CurrentTick / 15 % 3 == 0
                         ? 90
                         : 270;
+        }
+
         var ca = Math.Cos(angle * degToRad);
         var sa = Math.Sin(angle * degToRad);
         return new Vec2

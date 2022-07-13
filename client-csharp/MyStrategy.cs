@@ -305,7 +305,7 @@ namespace AiCup22
             var direction = turnAround
                                 ? Measurer.GetInvertedVec(Me.Direction)
                                 : Me.Direction;
-            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(Measurer.GetWiggleVelocity(Me.Direction), direction, actionUseShieldPotion) }, };
+            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(Measurer.GetWiggleVelocity(Me.Direction, true), direction, actionUseShieldPotion) }, };
         }
 
         #endregion
