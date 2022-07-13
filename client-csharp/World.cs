@@ -19,24 +19,28 @@ public class World
 
     #region Zone
 
-    public Vec2 ZoneCenter { get; set; }
-    public double ZoneRadius { get; set; }
-    public Vec2 ZoneNextCenter { get; set; }
-    public double ZoneNextRadius { get; set; }
+    public Vec2 ZoneCenter => Game.Zone.CurrentCenter;
+    public double ZoneRadius => Game.Zone.CurrentRadius;
+    public Vec2 ZoneNextCenter => Game.Zone.NextCenter;
+    public double ZoneNextRadius => Game.Zone.NextRadius;
 
     #endregion
 
     #region Units
 
     public MyUnit Me { get; set; }
-    public bool OutOfZone { get; set; }
-    public bool NearToOutOfZone { get; set; }
+    public bool OutOfZone => Measurer.GetDistanceBetween(ZoneCenter, Me.Position) >= Game.Zone.CurrentRadius;
+    public bool NearToOutOfZone => Measurer.GetDistanceBetween(ZoneCenter, Me.Position) >= Game.Zone.CurrentRadius * 0.97;
 
     public List<CustomUnit> AllUnits => MyUnits.Cast<CustomUnit>()
                                                .Union(EnemyUnits).ToList();
 
     public List<MyUnit> MyUnits { get; set; } = new();
     public List<MyUnit> MyTeammates => MyUnits.Where(u => u.Id != Me.Id).ToList();
+    public bool HasAnyTeammates => MyTeammates.Any();
+
+    public bool IsFarFromTeammate => HasAnyTeammates && Measurer.GetDistanceBetween(Me.Position, MyTeammates.First().Position) >= Constants.ViewDistance;
+
     public List<EnemyUnit> EnemyUnits { get; set; } = new();
     public EnemyUnit NearestEnemy => EnemyUnits.OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
     public bool IsNearestEnemyVisible => NearestEnemy != null;
@@ -161,11 +165,6 @@ public class World
         Game = game;
         Me = me;
 
-        ZoneCenter = game.Zone.CurrentCenter;
-        ZoneRadius = game.Zone.CurrentRadius;
-        ZoneNextCenter = game.Zone.NextCenter;
-        ZoneNextRadius = game.Zone.NextRadius;
-
         MyUnits = new List<MyUnit>();
         EnemyUnits = new List<EnemyUnit>();
         foreach (var unit in game.Units)
@@ -180,8 +179,6 @@ public class World
             }
         }
 
-        OutOfZone = Measurer.GetDistanceBetween(ZoneCenter, Me.Position) >= game.Zone.CurrentRadius;
-        NearToOutOfZone = Measurer.GetDistanceBetween(ZoneCenter, Me.Position) >= game.Zone.CurrentRadius * 0.97;
         WeaponItems = new List<WeaponLootItem>();
         AmmoItems = new List<AmmoLootItem>();
         ShieldItems = new List<ShieldLootItem>();

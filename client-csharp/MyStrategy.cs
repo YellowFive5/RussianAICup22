@@ -80,6 +80,13 @@ namespace AiCup22
                 return;
             }
 
+            if (World.IsFarFromTeammate)
+            {
+                GoTo(World.MyTeammates.First());
+                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "ReturnInZone/GoTo(World.MyTeammates.First()))", new Vec2(), 2, CustomDebug.VioletColor));
+                return;
+            }
+
             if (World.NearToOutOfZone)
             {
                 GoTo(Measurer.GetZoneBorderPoint(Me));
