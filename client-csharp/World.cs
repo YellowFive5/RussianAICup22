@@ -19,18 +19,18 @@ public class World
 
     #region Zone
 
-    public Vec2 ZoneCenter { get; set; }
-    public double ZoneRadius { get; set; }
-    public Vec2 ZoneNextCenter { get; set; }
-    public double ZoneNextRadius { get; set; }
+    public Vec2 ZoneCenter => Game.Zone.CurrentCenter;
+    public double ZoneRadius => Game.Zone.CurrentRadius;
+    public Vec2 ZoneNextCenter => Game.Zone.NextCenter;
+    public double ZoneNextRadius => Game.Zone.NextRadius;
 
     #endregion
 
     #region Units
 
     public MyUnit Me { get; set; }
-    public bool OutOfZone { get; set; }
-    public bool NearToOutOfZone { get; set; }
+    public bool OutOfZone => Measurer.GetDistanceBetween(ZoneCenter, Me.Position) >= Game.Zone.CurrentRadius;
+    public bool NearToOutOfZone => Measurer.GetDistanceBetween(ZoneCenter, Me.Position) >= Game.Zone.CurrentRadius * 0.97;
 
     public List<CustomUnit> AllUnits => MyUnits.Cast<CustomUnit>()
                                                .Union(EnemyUnits).ToList();
@@ -62,6 +62,12 @@ public class World
     #endregion
 
     #region Items
+
+    public List<ShieldLootItem> ShieldItems { get; set; } = new();
+
+    public ShieldLootItem NearestShieldLootItem => ShieldItems.OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
+
+    public bool IsNearestShieldLootItemVisible => NearestShieldLootItem != null;
 
     public List<WeaponLootItem> WeaponItems { get; set; } = new();
     public WeaponLootItem NearestPistol => WeaponItems.Where(e => e.Type == WeaponLootItem.WeaponType.Pistol).OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
@@ -114,10 +120,43 @@ public class World
         }
     }
 
+    public CustomItem GetNearestItemToLoot()
+    {
+        var nearestCollectibles = new List<CustomItem>();
+        if (IsNearestShieldLootItemVisible)
+        {
+            nearestCollectibles.Add(NearestShieldLootItem);
+        }
 
-    public List<ShieldLootItem> ShieldItems { get; set; } = new();
-    public ShieldLootItem NearestShieldLootItem => ShieldItems.OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
-    public bool IsNearestShieldLootItemVisible => NearestShieldLootItem != null;
+        if (IsNearestActiveAmmoVisible())
+        {
+            nearestCollectibles.Add(GetNearestActiveAmmoLoot());
+        }
+
+        switch (Me.WeaponType)
+        {
+            case WeaponLootItem.WeaponType.Pistol:
+            {
+                if (IsNearestSniperVisible)
+                {
+                    nearestCollectibles.Add(NearestSniper);
+                }
+
+                if (IsNearestRifleVisible)
+                {
+                    nearestCollectibles.Add(NearestRifle);
+                }
+
+                break;
+            }
+            case WeaponLootItem.WeaponType.Rifle when IsNearestSniperVisible:
+                nearestCollectibles.Add(NearestSniper);
+                break;
+        }
+
+        return nearestCollectibles.OrderBy(nc => Measurer.GetDistanceBetween(nc.Position, Me.Position))
+                                  .FirstOrDefault();
+    }
 
     #endregion
 
@@ -152,10 +191,6 @@ public class World
     public void Scan(Game game, int playerTurn)
     {
         Game = game;
-        ZoneCenter = game.Zone.CurrentCenter;
-        ZoneRadius = game.Zone.CurrentRadius;
-        ZoneNextCenter = game.Zone.NextCenter;
-        ZoneNextRadius = game.Zone.NextRadius;
 
         MyUnits = new List<MyUnit>();
         EnemyUnits = new List<EnemyUnit>();
@@ -173,8 +208,6 @@ public class World
 
         Me = MyUnits.ElementAt(playerTurn);
 
-        OutOfZone = Measurer.GetDistanceBetween(ZoneCenter, Me.Position) >= game.Zone.CurrentRadius;
-        NearToOutOfZone = Measurer.GetDistanceBetween(ZoneCenter, Me.Position) >= game.Zone.CurrentRadius * 0.97;
         WeaponItems = new List<WeaponLootItem>();
         AmmoItems = new List<AmmoLootItem>();
         ShieldItems = new List<ShieldLootItem>();
