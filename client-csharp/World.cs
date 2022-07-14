@@ -40,7 +40,12 @@ public class World
     public List<MyUnit> MyTeammates => MyUnits.Where(u => u.Id != Me.Id).ToList();
     public bool HasAnyTeammates => MyTeammates.Any();
 
-    public bool IsFarFromTeammate => HasAnyTeammates && Measurer.GetDistanceBetween(Me.Position, MyTeammates.First().Position) >= Constants.ViewDistance * 0.8;
+    public MyUnit Commander => HasAnyTeammates
+                                   ? MyUnits.First()
+                                   : Me;
+
+    public bool IsFarFromCommander => IsImDeputy && Measurer.GetDistanceBetween(Me.Position, Commander.Position) >= Constants.ViewDistance * 0.5;
+    public bool IsImDeputy => HasAnyTeammates && Me != MyUnits.First();
 
     public List<EnemyUnit> EnemyUnits { get; set; } = new();
 

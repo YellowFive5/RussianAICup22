@@ -334,7 +334,7 @@ public class Measurer
     }
 
 
-    public Vec2 GetRandomVec()
+    public Vec2 GetRandomVector()
     {
         return new Vec2
                {
@@ -343,7 +343,16 @@ public class Measurer
                };
     }
 
-    public Vec2 GetInvertedVec(Vec2 to)
+    public Vec2 GetVectorTo(Vec2 from, Vec2 to)
+    {
+        return new Vec2
+               {
+                   X = to.X - from.X,
+                   Y = to.Y - from.Y,
+               };
+    }
+
+    public Vec2 GetInvertedVector(Vec2 to)
     {
         return new Vec2
                {

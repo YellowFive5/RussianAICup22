@@ -16,6 +16,7 @@ namespace AiCup22
         private Measurer Measurer { get; set; }
         private World World { get; set; }
         private MyUnit Me { get; set; }
+        private MyUnit Leader { get; set; }
         private DebugInterface DebugInterface { get; set; }
         public List<MyUnit> MyUnits { get; set; } = new();
         public Dictionary<int, UnitOrder> Commands { get; set; }
@@ -43,6 +44,8 @@ namespace AiCup22
                     MyUnits.Add(new MyUnit(unit, Constants));
                 }
             }
+
+            Leader = MyUnits.First();
 
             foreach (var me in MyUnits)
             {
@@ -298,9 +301,9 @@ namespace AiCup22
                 return;
             }
 
-            if (World.IsFarFromTeammate)
+            if (World.IsImDeputy && World.IsFarFromCommander)
             {
-                GoTo(World.MyTeammates.First());
+                GoTo(World.Commander);
                 DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "GoToTarget/GoTo(World.MyTeammates.First()))", new Vec2(), 2, CustomDebug.VioletColor));
                 return;
             }
@@ -318,7 +321,7 @@ namespace AiCup22
             var movement = Measurer.GetSmartDirectionVelocity(Me, unit.Position, unit.Velocity);
             var actionAim = new ActionOrder.Aim(withShoot);
 
-            Commands.Add(Me.Id, new UnitOrder(Measurer.GetRandomVec(), movement.direction, actionAim));
+            Commands.Add(Me.Id, new UnitOrder(Measurer.GetRandomVector(), movement.direction, actionAim));
         }
 
         private void GoPickup(CustomItem item)
@@ -337,7 +340,7 @@ namespace AiCup22
         private void GoTo(Vec2 point)
         {
             var movement = Measurer.GetSmartDirectionVelocity(Me, point);
-            Commands.Add(Me.Id, new UnitOrder(movement.velocity, Measurer.GetInvertedVec(Me.Direction), null));
+            Commands.Add(Me.Id, new UnitOrder(movement.velocity, Measurer.GetInvertedVector(Me.Direction), null));
         }
 
         private void ComeToAim(CustomUnit unit, bool withShot = false)
@@ -354,8 +357,8 @@ namespace AiCup22
             var actionUseShieldPotion = new ActionOrder.UseShieldPotion();
             Commands.Add(Me.Id,
                          isNearestEnemyVisible
-                             ? new UnitOrder(Measurer.GetBulletsDodgeVelocity(Me, World.NearestEnemy), World.NearestEnemy.Position, actionUseShieldPotion)
-                             : new UnitOrder(Measurer.GetWiggleVelocity(Me.Direction), Measurer.GetInvertedVec(Me.Direction), actionUseShieldPotion));
+                             ? new UnitOrder(Measurer.GetBulletsDodgeVelocity(Me, World.NearestEnemy), Measurer.GetVectorTo(Me.Position, World.NearestEnemy.Position), actionUseShieldPotion)
+                             : new UnitOrder(Measurer.GetWiggleVelocity(Me.Direction), Measurer.GetInvertedVector(Me.Direction), actionUseShieldPotion));
         }
 
         #endregion
