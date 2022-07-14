@@ -50,7 +50,7 @@ public class World
     public List<EnemyUnit> EnemyUnits { get; set; } = new();
 
     public EnemyUnit NearestEnemy => EnemyUnits.Where(e => !e.IsSpawning)
-                                               .OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
+                                               .OrderBy(e => Measurer.GetDistanceBetween(Commander.Position, e.Position)).FirstOrDefault();
 
     public bool IsNearestEnemyVisible => NearestEnemy != null;
     public EnemyUnit NearestWeakestEnemy => EnemyUnits.OrderBy(e => e.HealthShieldPoints).FirstOrDefault();
