@@ -120,6 +120,21 @@ namespace AiCup22
 
         private void ProcessItems()
         {
+            if (Me.IsPotionsEmpty && Me.IsAmmoEmpty)
+            {
+                if (World.IsNearestShieldLootItemVisible && World.IsNearestActiveAmmoVisible())
+                {
+                    if (Measurer.GetDistanceBetween(World.NearestShieldLootItem.Position, Me.Position) < Measurer.GetDistanceBetween(World.GetNearestActiveAmmoLoot().Position, Me.Position))
+                    {
+                        CollectPotions();
+                        return;
+                    }
+
+                    CollectAmmo();
+                    return;
+                }
+            }
+
             if (Me.IsPotionsEmpty)
             {
                 CollectPotions();
