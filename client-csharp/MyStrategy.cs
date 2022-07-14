@@ -302,7 +302,7 @@ namespace AiCup22
         {
             var movement = Measurer.GetSmartDirectionVelocity(Me, unit.Position, unit.Velocity);
             var actionAim = new ActionOrder.Aim(withShoot);
-            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(Measurer.GetRandomVec(), movement.direction, actionAim) }, };
+            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(Measurer.GetRandomVector(), movement.direction, actionAim) }, };
         }
 
         private void GoPickup(CustomItem item)
@@ -314,14 +314,14 @@ namespace AiCup22
 
         private void GoTo(CustomUnit unit)
         {
-            var movement = Measurer.GetSmartDirectionVelocity(Me, unit.Position, unit.Velocity);
+            var movement = Measurer.GetSmartDirectionVelocity(Me, unit.Position);
             Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(movement.velocity, movement.direction, null) }, };
         }
 
         private void GoTo(Vec2 point)
         {
             var movement = Measurer.GetSmartDirectionVelocity(Me, point);
-            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(movement.velocity, Measurer.GetInvertedVec(Me.Direction), null) }, };
+            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(movement.velocity, Measurer.GetInvertedVector(Me.Direction), null) }, };
         }
 
         private void ComeToAim(CustomUnit unit, bool withShot = false)
@@ -340,8 +340,8 @@ namespace AiCup22
                       {
                           {
                               Me.Id, isNearestEnemyVisible
-                                         ? new UnitOrder(Measurer.GetBulletsDodgeVelocity(Me, World.NearestEnemy), World.NearestEnemy.Position, actionUseShieldPotion)
-                                         : new UnitOrder(Measurer.GetWiggleVelocity(Me.Direction), Measurer.GetInvertedVec(Me.Direction), actionUseShieldPotion)
+                                         ? new UnitOrder(Measurer.GetBulletsDodgeVelocity(Me, World.NearestEnemy), Measurer.GetVectorTo(Me.Position, World.NearestEnemy.Position), actionUseShieldPotion)
+                                         : new UnitOrder(Measurer.GetWiggleVelocity(Me.Direction), Measurer.GetInvertedVector(Me.Direction), actionUseShieldPotion)
                           }
                       };
         }
