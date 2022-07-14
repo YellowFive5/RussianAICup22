@@ -37,8 +37,15 @@ public class World
 
     public List<MyUnit> MyUnits { get; set; } = new();
     public List<MyUnit> MyTeammates => MyUnits.Where(u => u.Id != Me.Id).ToList();
+    public bool HasAnyTeammates => MyTeammates.Any();
+
+    public bool IsFarFromTeammate => HasAnyTeammates && Measurer.GetDistanceBetween(Me.Position, MyTeammates.First().Position) >= Constants.ViewDistance * 0.8;
+
     public List<EnemyUnit> EnemyUnits { get; set; } = new();
-    public EnemyUnit NearestEnemy => EnemyUnits.OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
+
+    public EnemyUnit NearestEnemy => EnemyUnits.Where(e => !e.IsSpawning)
+                                               .OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
+
     public bool IsNearestEnemyVisible => NearestEnemy != null;
     public EnemyUnit NearestWeakestEnemy => EnemyUnits.OrderBy(e => e.HealthShieldPoints).FirstOrDefault();
 
@@ -65,12 +72,15 @@ public class World
 
     public List<ShieldLootItem> ShieldItems { get; set; } = new();
 
-    public ShieldLootItem NearestShieldLootItem => ShieldItems.OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
+    public ShieldLootItem NearestShieldLootItem => ShieldItems.OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position))
+                                                              .FirstOrDefault();
 
     public bool IsNearestShieldLootItemVisible => NearestShieldLootItem != null;
 
     public List<WeaponLootItem> WeaponItems { get; set; } = new();
+
     public WeaponLootItem NearestPistol => WeaponItems.Where(e => e.Type == WeaponLootItem.WeaponType.Pistol).OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
+
     public bool IsNearestPistolVisible => NearestPistol != null;
     public WeaponLootItem NearestRifle => WeaponItems.Where(e => e.Type == WeaponLootItem.WeaponType.Rifle).OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
     public bool IsNearestRifleVisible => NearestRifle != null;
@@ -188,9 +198,10 @@ public class World
         Constants = constants;
     }
 
-    public void Scan(Game game, int playerTurn)
+    public void Scan(Game game, MyUnit me)
     {
         Game = game;
+        Me = me;
 
         MyUnits = new List<MyUnit>();
         EnemyUnits = new List<EnemyUnit>();
@@ -205,8 +216,6 @@ public class World
                 EnemyUnits.Add(new EnemyUnit(unit, Constants));
             }
         }
-
-        Me = MyUnits.ElementAt(playerTurn);
 
         WeaponItems = new List<WeaponLootItem>();
         AmmoItems = new List<AmmoLootItem>();

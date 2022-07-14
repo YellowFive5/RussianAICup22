@@ -4,7 +4,6 @@ using System;
 using System.Linq;
 using System.Numerics;
 using AiCup22.CustomModel;
-using AiCup22.Debugging;
 using AiCup22.Model;
 
 #endregion
@@ -288,51 +287,6 @@ public class Measurer
                    Y = (sa * from.X + ca * from.Y) * 30,
                };
     }
-
-    public Vec2 GetBulletsDodgeVelocity(MyUnit myUnit, CustomUnit enemy)
-    {
-        var direction = myUnit.Direction;
-
-        var bulletToDodge = World.Bullets
-                                 .Where(b => b.Projectile.ShooterPlayerId != World.Me.Unit.PlayerId)
-                                 .Where(b => GetDistanceBetween(b.Position, myUnit.Position) <= GetDistanceBetween(enemy.Position, myUnit.Position))
-                                 .OrderBy(b => GetDistanceBetween(myUnit.Position, b.Position))
-                                 .FirstOrDefault();
-
-        const double degToRad = Math.PI / 180;
-        if (bulletToDodge != null)
-        {
-            var meToEnemy = FindAngle(myUnit.Position, enemy.Position);
-            var meToBullet = FindAngle(myUnit.Position, bulletToDodge.Position);
-            var resultAngle = meToBullet - meToEnemy;
-
-            DebugInterface?.Add(new DebugData.Ring(bulletToDodge.Position, 0.5, 0.5, CustomDebug.VioletColor));
-            DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, resultAngle.ToString(), World.Me.Direction, 2, CustomDebug.GreenColor));
-
-            var angle = 0;
-            if (resultAngle < 0)
-            {
-                angle = 90;
-                // DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "Left", new Vec2(), 5, CustomDebug.GreenColor));
-            }
-            else
-            {
-                angle = 270;
-                // DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "Right", new Vec2(), 5, CustomDebug.GreenColor));
-            }
-
-            var ca = Math.Cos(angle * degToRad);
-            var sa = Math.Sin(angle * degToRad);
-            return new Vec2
-                   {
-                       X = (ca * direction.X - sa * direction.Y) * 30,
-                       Y = (sa * direction.X + ca * direction.Y) * 30,
-                   };
-        }
-
-        return GetWiggleVelocity(direction);
-    }
-
 
     public Vec2 GetRandomVec()
     {

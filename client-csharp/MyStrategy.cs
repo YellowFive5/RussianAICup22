@@ -12,46 +12,53 @@ namespace AiCup22
 {
     public class MyStrategy
     {
+        public Constants Constants { get; }
         private Measurer Measurer { get; set; }
-        private World World { get; }
-        private MyUnit Me => World.Me;
+        private World World { get; set; }
+        private MyUnit Me { get; set; }
         private DebugInterface DebugInterface { get; set; }
-        public Dictionary<int, UnitOrder> Command { get; set; }
-
-        private int playerTurn;
+        public List<MyUnit> MyUnits { get; set; } = new();
+        public Dictionary<int, UnitOrder> Commands { get; set; }
 
         public MyStrategy(Constants constants)
         {
+            Constants = constants;
             World = new World(constants);
         }
 
         public Order GetOrder(Game game, DebugInterface debugInterface)
         {
-            var players = game.Units.Count(u => u.PlayerId == game.MyId);
-            playerTurn = playerTurn >= players - 1
-                             ? 0
-                             : playerTurn + 1;
-
-
             // DebugInterface = debugInterface; // debug on
             DebugInterface = null; // debug off
 
-            Command = new Dictionary<int, UnitOrder>();
-
+            Commands = new Dictionary<int, UnitOrder>();
+            MyUnits = new List<MyUnit>();
+            World = new World(Constants);
             Measurer = new Measurer(World, DebugInterface);
 
-            World.Scan(game, playerTurn);
+            foreach (var unit in game.Units)
+            {
+                if (unit.PlayerId == game.MyId)
+                {
+                    MyUnits.Add(new MyUnit(unit, Constants));
+                }
+            }
 
-            ChooseAction();
+            foreach (var me in MyUnits)
+            {
+                Me = me;
+                World.Scan(game, me);
+                ChooseAction();
+            }
 
-            return new Order(Command);
+            return new Order(Commands);
         }
 
         private void ChooseAction()
         {
             // DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, World.Me.Potions.ToString(), new Vec2(), 5, CustomDebug.VioletColor));
-            // DebugInterface.Add(new DebugData.Ring(World.NearestSniperAmmoLoot.Position, 2, 2, CustomDebug.VioletColor));
-            // DebugInterface.Add(new DebugData.PolyLine(new[] { new Vec2(50,100), new Vec2(0,50) }, 5, CustomDebug.GreenColor));
+            // DebugInterface?.Add(new DebugData.Ring(World.NearestSniperAmmoLoot.Position, 2, 2, CustomDebug.VioletColor));
+            // DebugInterface?.Add(new DebugData.PolyLine(new[] { new Vec2(50,100), new Vec2(0,50) }, 5, CustomDebug.GreenColor));
 
             ReturnInWhiteZone();
 
@@ -64,11 +71,12 @@ namespace AiCup22
             GoToTarget();
         }
 
+
         #region Behaviour
 
         private void ReturnInWhiteZone()
         {
-            if (Command.Any())
+            if (Commands.Any(c => c.Key == Me.Id))
             {
                 return;
             }
@@ -82,7 +90,7 @@ namespace AiCup22
 
         private void Heel()
         {
-            if (Command.Any())
+            if (Commands.Any(c => c.Key == Me.Id))
             {
                 return;
             }
@@ -146,7 +154,7 @@ namespace AiCup22
 
         private void CollectPotions()
         {
-            if (Command.Any())
+            if (Commands.Any(c => c.Key == Me.Id))
             {
                 return;
             }
@@ -171,7 +179,7 @@ namespace AiCup22
 
         private void CollectAmmo()
         {
-            if (Command.Any())
+            if (Commands.Any(c => c.Key == Me.Id))
             {
                 return;
             }
@@ -196,7 +204,7 @@ namespace AiCup22
 
         private void ChangeWeapon()
         {
-            if (Command.Any())
+            if (Commands.Any(c => c.Key == Me.Id))
             {
                 return;
             }
@@ -234,7 +242,7 @@ namespace AiCup22
 
         private void AttackEnemy()
         {
-            if (Command.Any())
+            if (Commands.Any(c => c.Key == Me.Id))
             {
                 return;
             }
@@ -266,8 +274,15 @@ namespace AiCup22
 
         private void GoToTarget()
         {
-            if (Command.Any())
+            if (Commands.Any(c => c.Key == Me.Id))
             {
+                return;
+            }
+
+            if (World.IsFarFromTeammate)
+            {
+                GoTo(World.MyTeammates.First());
+                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "GoToTarget/GoTo(World.MyTeammates.First()))", new Vec2(), 2, CustomDebug.VioletColor));
                 return;
             }
 
@@ -283,26 +298,27 @@ namespace AiCup22
         {
             var movement = Measurer.GetSmartDirectionVelocity(Me, unit.Position, unit.Velocity);
             var actionAim = new ActionOrder.Aim(withShoot);
-            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(Measurer.GetRandomVec(), movement.direction, actionAim) }, };
+
+            Commands.Add(Me.Id, new UnitOrder(Measurer.GetRandomVec(), movement.direction, actionAim));
         }
 
         private void GoPickup(CustomItem item)
         {
             var movement = Measurer.GetSmartDirectionVelocity(Me, item.Position);
             var actionPickup = new ActionOrder.Pickup(item.Id);
-            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(movement.velocity, movement.direction, actionPickup) }, };
+            Commands.Add(Me.Id, new UnitOrder(movement.velocity, movement.direction, actionPickup));
         }
 
         private void GoTo(CustomUnit unit)
         {
             var movement = Measurer.GetSmartDirectionVelocity(Me, unit.Position, unit.Velocity);
-            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(movement.velocity, movement.direction, null) }, };
+            Commands.Add(Me.Id, new UnitOrder(movement.velocity, movement.direction, null));
         }
 
         private void GoTo(Vec2 point)
         {
             var movement = Measurer.GetSmartDirectionVelocity(Me, point);
-            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(movement.velocity, Measurer.GetInvertedVec(Me.Direction), null) }, };
+            Commands.Add(Me.Id, new UnitOrder(movement.velocity, Measurer.GetInvertedVec(Me.Direction), null));
         }
 
         private void ComeToAim(CustomUnit unit, bool withShot = false)
@@ -313,7 +329,7 @@ namespace AiCup22
                                ? Measurer.GetWiggleVelocity(Me.Direction)
                                : smartAim.velocity;
             var actionAim = new ActionOrder.Aim(withShot);
-            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(velocity, smartAim.direction, actionAim) }, };
+            Commands.Add(Me.Id, new UnitOrder(velocity, smartAim.direction, actionAim));
         }
 
         private void TakePotion(bool turnAround = false)
@@ -322,7 +338,7 @@ namespace AiCup22
             var direction = turnAround
                                 ? Measurer.GetInvertedVec(Me.Direction)
                                 : Me.Direction;
-            Command = new Dictionary<int, UnitOrder> { { Me.Id, new UnitOrder(Measurer.GetWiggleVelocity(Me.Direction), direction, actionUseShieldPotion) }, };
+            Commands.Add(Me.Id, new UnitOrder(Measurer.GetWiggleVelocity(Me.Direction), direction, actionUseShieldPotion));
         }
 
         #endregion
