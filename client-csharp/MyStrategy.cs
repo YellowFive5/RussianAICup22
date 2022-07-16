@@ -185,7 +185,7 @@ namespace AiCup22
                 return;
             }
 
-            if (Me.NeedToCollectPotions &&
+            if (!Me.IsPotionsFull &&
                 World.IsNearestShieldLootItemVisible &&
                 (!Measurer.IsDistanceAllowToHit(World.NearestEnemy, Me) ||
                  !Measurer.IsClearVisible(World.NearestEnemy, Me)))
@@ -209,7 +209,7 @@ namespace AiCup22
                 return;
             }
 
-            if (Me.NeedToCollectAmmo &&
+            if (!Me.IsAmmoFull &&
                 World.IsNearestActiveAmmoVisible() &&
                 (!Measurer.IsDistanceAllowToHit(World.NearestEnemy, Me) ||
                  !Measurer.IsClearVisible(World.NearestEnemy, Me))
