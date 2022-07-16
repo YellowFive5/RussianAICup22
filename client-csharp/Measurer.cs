@@ -32,10 +32,11 @@ public class Measurer
     {
         var nearestCollisionObject = GetNearestCollisionObjectOnMyWay(from, to);
 
-        // var collisioned = nearestCollisionObject != null &&
-        //                   !from.IsSpawning &&
-        //                   Math.Round(GetDistanceBetween(from.Position, to)) >= Math.Round(GetDistanceBetween(to, nearestCollisionObject.Position)); //todo temp off
-        var collisioned = false;
+        var collisioned = nearestCollisionObject != null
+                          && !World.Objects.Cast<CustomItem>()
+                                   .Any(o => GetDistanceBetween(from.Position, o.Position) <= o.Radius + from.Radius)
+                          && !from.IsSpawning
+                          && Math.Round(GetDistanceBetween(from.Position, to)) >= Math.Round(GetDistanceBetween(to, nearestCollisionObject.Position)); //todo temp off
 
         var invertCoefficient = invertedVelocity
                                     ? -1
@@ -65,27 +66,15 @@ public class Measurer
                 var tb = new Vec2(r * -Math.Sin(t3),
                                   r * Math.Cos(t3));
 
-                // realTarget = World.Game.CurrentTick / 30 % 2 == 0
-                //                  ? new Vec2(ta.X + nearestCollisionObject.Position.X, ta.Y + nearestCollisionObject.Position.Y)
-                //                  : new Vec2(tb.X + nearestCollisionObject.Position.X, tb.Y + nearestCollisionObject.Position.Y);
+                realTarget = World.Me.Id % 2 == 0
+                                 ? new Vec2(ta.X + nearestCollisionObject.Position.X, ta.Y + nearestCollisionObject.Position.Y)
+                                 : new Vec2(tb.X + nearestCollisionObject.Position.X, tb.Y + nearestCollisionObject.Position.Y);
 
-                realTarget = new Vec2(ta.X + nearestCollisionObject.Position.X, ta.Y + nearestCollisionObject.Position.Y);
-                // DebugInterface?.Add(new DebugData.Ring(nearestCollisionObject.Position, r, 0.1, CustomDebug.VioletColor));
-                // DebugInterface?.Add(new DebugData.PolyLine(new[] { realFrom, realTarget }, 0.3, CustomDebug.GreenColor));
+                DebugInterface?.Add(new DebugData.Ring(nearestCollisionObject.Position, r, 0.1, CustomDebug.VioletColor));
+                DebugInterface?.Add(new DebugData.PolyLine(new[] { realFrom, realTarget }, 0.3, CustomDebug.GreenColor));
             }
 
             var angleSimple = FindAngle(realFrom, realTarget);
-            // var velocitySimple = !from.IsSpawning // ease come
-            //                          ? new Vec2
-            //                            {
-            //                                X = (realTarget.X - realFrom.X + Math.Cos(angleSimple) * 20) * invertCoefficient,
-            //                                Y = (realTarget.Y - realFrom.Y + Math.Sin(angleSimple) * 20) * invertCoefficient
-            //                            }
-            //                          : new Vec2
-            //                            {
-            //                                X = (realTarget.X - realFrom.X) * invertCoefficient,
-            //                                Y = (realTarget.Y - realFrom.Y) * invertCoefficient,
-            //                            }; //todo temp off
 
             var velocitySimple = new Vec2
                                  {
@@ -205,7 +194,6 @@ public class Measurer
 
         var potentialCover = World.Objects.Cast<CustomItem>()
                                   .Where(o => GetDistanceBetween(from.Position, o.Position) <= 25)
-                                  .Union(World.MyTeammates) // todo temp
                                   .OrderBy(o => GetDistanceBetween(from.Position, o.Position));
 
         var dpx = to.X - from.Position.X;
