@@ -185,10 +185,19 @@ namespace AiCup22
                 return;
             }
 
-            if (!Me.IsPotionsFull &&
+            if (Me.NeedToCollectPotions &&
                 World.IsNearestShieldLootItemVisible &&
                 (!Measurer.IsDistanceAllowToHit(World.NearestEnemy, Me) ||
                  !Measurer.IsClearVisible(World.NearestEnemy, Me)))
+            {
+                GoPickup(World.NearestShieldLootItem);
+                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "CollectPotions/Measurer.IsDistanceAllowToHit(World.NearestEnemy, Me)/GoPickup(World.NearestShieldLootItem);)", new Vec2(), 2, CustomDebug.VioletColor));
+                return;
+            }
+
+            if (!Me.IsPotionsFull &&
+                World.IsNearestShieldLootItemVisible &&
+                !World.IsNearestEnemyVisible)
             {
                 GoPickup(World.NearestShieldLootItem);
                 DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "CollectPotions/Measurer.IsDistanceAllowToHit(World.NearestEnemy, Me)/GoPickup(World.NearestShieldLootItem);)", new Vec2(), 2, CustomDebug.VioletColor));
@@ -209,11 +218,19 @@ namespace AiCup22
                 return;
             }
 
-            if (!Me.IsAmmoFull &&
+            if (Me.NeedToCollectAmmo &&
                 World.IsNearestActiveAmmoVisible() &&
                 (!Measurer.IsDistanceAllowToHit(World.NearestEnemy, Me) ||
-                 !Measurer.IsClearVisible(World.NearestEnemy, Me))
-               )
+                 !Measurer.IsClearVisible(World.NearestEnemy, Me)))
+            {
+                GoPickup(World.GetNearestActiveAmmoLoot());
+                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "CollectAmmo/!Measurer.IsDistanceAllowToHit(World.NearestEnemy, Me)/GoPickup(World.GetNearestActiveAmmoLoot()))", new Vec2(), 2, CustomDebug.VioletColor));
+                return;
+            }
+
+            if (!Me.IsAmmoFull &&
+                World.IsNearestActiveAmmoVisible() &&
+                !World.IsNearestEnemyVisible)
             {
                 GoPickup(World.GetNearestActiveAmmoLoot());
                 DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "CollectAmmo/!Measurer.IsDistanceAllowToHit(World.NearestEnemy, Me)/GoPickup(World.GetNearestActiveAmmoLoot()))", new Vec2(), 2, CustomDebug.VioletColor));
