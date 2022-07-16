@@ -144,8 +144,8 @@ public class Measurer
         var vX = item.Position.X - World.ZoneCenter.X;
         var vY = item.Position.Y - World.ZoneCenter.Y;
         var magV = Math.Sqrt(vX * vX + vY * vY);
-        var aX = World.ZoneCenter.X + vX / magV * (World.ZoneRadius - InZonePointCoefficient * World.ZoneRadius);
-        var aY = World.ZoneCenter.Y + vY / magV * (World.ZoneRadius - InZonePointCoefficient * World.ZoneRadius);
+        var aX = World.ZoneCenter.X + vX / magV * (World.ZoneRadius - (InZonePointCoefficient * World.ZoneRadius + UnitRadius * 2.5));
+        var aY = World.ZoneCenter.Y + vY / magV * (World.ZoneRadius - (InZonePointCoefficient * World.ZoneRadius + UnitRadius * 2.5));
         return new Vec2 { X = aX, Y = aY };
     }
 
@@ -275,7 +275,7 @@ public class Measurer
         }
         else
         {
-            angle = World.Game.CurrentTick / 15 % 3 == 0
+            angle = (World.Game.CurrentTick + Math.Pow(World.Me.Id, World.Me.Id)) / 15 % 3 == 0
                         ? 90
                         : 270;
         }
