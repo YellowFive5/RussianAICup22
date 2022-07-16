@@ -30,15 +30,28 @@ public class World
 
     public MyUnit Me { get; set; }
     public bool OutOfZone => Measurer.GetDistanceBetween(ZoneCenter, Me.Position) >= Game.Zone.CurrentRadius;
-    public bool NearToOutOfZone => Measurer.GetDistanceBetween(ZoneCenter, Me.Position) >= Game.Zone.CurrentRadius * 0.97;
+    public bool NearToOutOfZone => Measurer.GetDistanceBetween(ZoneCenter, Me.Position) >= Game.Zone.CurrentRadius * NearToOutOfZoneCoefficient - 2.5;
+    public double NearToOutOfZoneCoefficient => 0.970;
 
     public List<CustomUnit> AllUnits => MyUnits.Cast<CustomUnit>()
                                                .Union(EnemyUnits).ToList();
 
     public List<MyUnit> MyUnits { get; set; } = new();
     public List<MyUnit> MyTeammates => MyUnits.Where(u => u.Id != Me.Id).ToList();
+    public bool HasAnyTeammates => MyTeammates.Any();
+
+    public MyUnit Commander => HasAnyTeammates
+                                   ? MyUnits.First()
+                                   : Me;
+
+    public bool IsFarFromCommander => IsImDeputy && Measurer.GetDistanceBetween(Me.Position, Commander.Position) >= Constants.ViewDistance * 0.5;
+    public bool IsImDeputy => HasAnyTeammates && Me != MyUnits.First();
+
     public List<EnemyUnit> EnemyUnits { get; set; } = new();
-    public EnemyUnit NearestEnemy => EnemyUnits.OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
+
+    public EnemyUnit NearestEnemy => EnemyUnits.Where(e => !e.IsSpawning)
+                                               .OrderBy(e => Measurer.GetDistanceBetween(Commander.Position, e.Position)).FirstOrDefault();
+
     public bool IsNearestEnemyVisible => NearestEnemy != null;
     public EnemyUnit NearestWeakestEnemy => EnemyUnits.OrderBy(e => e.HealthShieldPoints).FirstOrDefault();
 
@@ -65,12 +78,15 @@ public class World
 
     public List<ShieldLootItem> ShieldItems { get; set; } = new();
 
-    public ShieldLootItem NearestShieldLootItem => ShieldItems.OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
+    public ShieldLootItem NearestShieldLootItem => ShieldItems.OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position))
+                                                              .FirstOrDefault();
 
     public bool IsNearestShieldLootItemVisible => NearestShieldLootItem != null;
 
     public List<WeaponLootItem> WeaponItems { get; set; } = new();
+
     public WeaponLootItem NearestPistol => WeaponItems.Where(e => e.Type == WeaponLootItem.WeaponType.Pistol).OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
+
     public bool IsNearestPistolVisible => NearestPistol != null;
     public WeaponLootItem NearestRifle => WeaponItems.Where(e => e.Type == WeaponLootItem.WeaponType.Rifle).OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
     public bool IsNearestRifleVisible => NearestRifle != null;
@@ -188,9 +204,10 @@ public class World
         Constants = constants;
     }
 
-    public void Scan(Game game, int playerTurn)
+    public void Scan(Game game, MyUnit me)
     {
         Game = game;
+        Me = me;
 
         MyUnits = new List<MyUnit>();
         EnemyUnits = new List<EnemyUnit>();
@@ -206,12 +223,10 @@ public class World
             }
         }
 
-        Me = MyUnits.ElementAt(playerTurn);
-
         WeaponItems = new List<WeaponLootItem>();
         AmmoItems = new List<AmmoLootItem>();
         ShieldItems = new List<ShieldLootItem>();
-        foreach (var loot in game.Loot.Where(l => Measurer.GetDistanceBetween(game.Zone.CurrentCenter, l.Position) < game.Zone.CurrentRadius))
+        foreach (var loot in game.Loot.Where(l => Measurer.GetDistanceBetween(game.Zone.CurrentCenter, l.Position) < game.Zone.CurrentRadius * NearToOutOfZoneCoefficient))
         {
             switch (loot.Item)
             {

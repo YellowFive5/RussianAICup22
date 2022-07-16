@@ -23,7 +23,7 @@ public static class Program
         var testResultsFile = $"{runnerDir}/../TestResults.txt";
         var testIterations = 500;
         var instances = 50;
-        
+
         // Linux
         // var runnerDir = @"/home/yellowfive/OneDrive/MY/#CODE/#RussianAiCup/'22/app-linux";
         // var runnerExe = @"/home/yellowfive/OneDrive/MY/#CODE/#RussianAiCup/'22/app-linux/aicup22";
@@ -32,7 +32,7 @@ public static class Program
         // var testIterations = 500;
         // var instances = 20;
 
-        for (var i = 0; i < testIterations / instances; i++)
+        for (var ft = 0; ft < testIterations / instances; ft++)
         {
             var result = Parallel.For(0,
                                       instances,
@@ -40,10 +40,12 @@ public static class Program
                                       {
                                           var p = Process.Start(new ProcessStartInfo(runnerExe)
                                                                 {
-                                                                    Arguments = $"--config {runnerDir}/../StrategyTester/configs/config({i}).json --batch-mode --save-results ../StrategyTester/{Guid.NewGuid()}.json",
+                                                                    // Arguments = $"--config {runnerDir}/../StrategyTester/configs/config({i}).json --batch-mode --save-results ../StrategyTester/{Guid.NewGuid()}.json",
+                                                                    Arguments = $"--config {runnerDir}/../StrategyTester/configs2/config({i}).json --batch-mode --save-results ../StrategyTester/{Guid.NewGuid()}.json",
                                                                     WorkingDirectory = runnerDir
                                                                 });
                                           p.WaitForExitAsync().Wait();
+                                          Console.WriteLine($"- - - - ~{instances * (ft + 1)} / 500 - - - - ");
                                       });
         }
 
