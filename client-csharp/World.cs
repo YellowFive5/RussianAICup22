@@ -29,6 +29,11 @@ public class World
     #region Units
 
     public MyUnit Me { get; set; }
+
+    public WeaponLootItem.WeaponType WeaponRole => !IsImDeputy
+                                                       ? WeaponLootItem.WeaponType.Sniper
+                                                       : WeaponLootItem.WeaponType.Rifle;
+
     public bool OutOfZone => Measurer.GetDistanceBetween(ZoneCenter, Me.Position) >= Game.Zone.CurrentRadius;
     public bool NearToOutOfZone => Measurer.GetDistanceBetween(ZoneCenter, Me.Position) >= Game.Zone.CurrentRadius * NearToOutOfZoneCoefficient - 2.5;
     public double NearToOutOfZoneCoefficient => 0.970;
@@ -41,11 +46,13 @@ public class World
     public bool HasAnyTeammates => MyTeammates.Any();
 
     public MyUnit Commander => HasAnyTeammates
-                                   ? MyUnits.First()
+                                   ? MyUnits.OrderBy(u => u.Id).First()
                                    : Me;
 
-    public bool IsFarFromCommander => IsImDeputy && Measurer.GetDistanceBetween(Me.Position, Commander.Position) >= Constants.ViewDistance * 0.5;
-    public bool IsImDeputy => HasAnyTeammates && Me != MyUnits.First();
+    public bool IsImCommander => Commander.Id == Me.Id;
+    public bool IsImDeputy => !IsImCommander;
+
+    public bool IsFarFromCommander => IsImDeputy && Measurer.GetDistanceBetween(Me.Position, Commander.Position) >= Constants.ViewDistance * 0.75;
 
     public List<EnemyUnit> EnemyUnits { get; set; } = new();
 
@@ -93,11 +100,14 @@ public class World
     public WeaponLootItem NearestSniper => WeaponItems.Where(e => e.Type == WeaponLootItem.WeaponType.Sniper).OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
     public bool IsNearestSniperVisible => NearestSniper != null;
     public List<AmmoLootItem> AmmoItems { get; set; } = new();
+    public List<AmmoLootItem> PistolAmmoLoot => AmmoItems.Where(e => e.Type == WeaponLootItem.WeaponType.Pistol).ToList();
     public AmmoLootItem NearestPistolAmmoLoot => AmmoItems.Where(e => e.Type == WeaponLootItem.WeaponType.Pistol).OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
     public bool IsNearestPistolAmmoLootVisible => NearestPistolAmmoLoot != null;
+    public List<AmmoLootItem> RifleAmmoLoot => AmmoItems.Where(e => e.Type == WeaponLootItem.WeaponType.Rifle).ToList();
 
     public AmmoLootItem NearestRifleAmmoLoot => AmmoItems.Where(e => e.Type == WeaponLootItem.WeaponType.Rifle).OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
     public bool IsNearestRifleAmmoLootVisible => NearestRifleAmmoLoot != null;
+    public List<AmmoLootItem> SniperAmmoLoot => AmmoItems.Where(e => e.Type == WeaponLootItem.WeaponType.Sniper).ToList();
 
     public AmmoLootItem NearestSniperAmmoLoot => AmmoItems.Where(e => e.Type == WeaponLootItem.WeaponType.Sniper).OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
     public bool IsNearestSniperAmmoLootVisible => NearestSniperAmmoLoot != null;
@@ -147,27 +157,6 @@ public class World
         if (IsNearestActiveAmmoVisible())
         {
             nearestCollectibles.Add(GetNearestActiveAmmoLoot());
-        }
-
-        switch (Me.WeaponType)
-        {
-            case WeaponLootItem.WeaponType.Pistol:
-            {
-                if (IsNearestSniperVisible)
-                {
-                    nearestCollectibles.Add(NearestSniper);
-                }
-
-                if (IsNearestRifleVisible)
-                {
-                    nearestCollectibles.Add(NearestRifle);
-                }
-
-                break;
-            }
-            case WeaponLootItem.WeaponType.Rifle when IsNearestSniperVisible:
-                nearestCollectibles.Add(NearestSniper);
-                break;
         }
 
         return nearestCollectibles.OrderBy(nc => Measurer.GetDistanceBetween(nc.Position, Me.Position))

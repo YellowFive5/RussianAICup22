@@ -1,5 +1,6 @@
 #region Usings
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using AiCup22.CustomModel;
@@ -63,9 +64,11 @@ namespace AiCup22
             // DebugInterface?.Add(new DebugData.Ring(World.NearestSniperAmmoLoot.Position, 2, 2, CustomDebug.VioletColor));
             // DebugInterface?.Add(new DebugData.PolyLine(new[] { new Vec2(50,100), new Vec2(0,50) }, 5, CustomDebug.GreenColor));
 
-            ReturnInWhiteZone();
+            ReturnInZone();
 
             Heel();
+
+            ChangeWeapon();
 
             ProcessItems();
 
@@ -77,7 +80,7 @@ namespace AiCup22
 
         #region Behaviour
 
-        private void ReturnInWhiteZone()
+        private void ReturnInZone()
         {
             if (Commands.Any(c => c.Key == Me.Id))
             {
@@ -164,9 +167,6 @@ namespace AiCup22
                 case AmmoLootItem:
                     CollectAmmo();
                     return;
-                case WeaponLootItem:
-                    ChangeWeapon();
-                    break;
             }
         }
 
@@ -244,34 +244,33 @@ namespace AiCup22
                 return;
             }
 
-            if (Measurer.IsDistanceAllowToHit(World.NearestEnemy, Me) &&
-                Measurer.IsClearVisible(World.NearestEnemy, Me))
+            if (World.WeaponRole == Me.WeaponType) // already changed
             {
                 return;
             }
 
-            if (Me.WeaponType == WeaponLootItem.WeaponType.Pistol)
+            switch (World.WeaponRole)
             {
-                if (World.IsNearestSniperVisible)
-                {
-                    GoPickup(World.NearestSniper);
-                    DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "ChangeWeapon/World.IsNearestSniperVisible/GoPickup(World.NearestSniper)", new Vec2(), 2, CustomDebug.VioletColor));
-                    return;
-                }
+                case WeaponLootItem.WeaponType.Rifle:
+                    if (World.IsNearestRifleVisible)
+                    {
+                        GoPickup(World.NearestRifle);
+                        DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "ChangeWeapon/World.IsNearestRifleVisible/GoPickup(World.NearestRifle);", new Vec2(), 2, CustomDebug.VioletColor));
+                    }
 
-                if (World.IsNearestRifleVisible)
-                {
-                    GoPickup(World.NearestRifle);
-                    DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "ChangeWeapon/World.IsNearestRifleVisible/GoPickup(World.NearestRifle);", new Vec2(), 2, CustomDebug.VioletColor));
+                    break;
+                case WeaponLootItem.WeaponType.Sniper:
+                    if (World.IsNearestSniperVisible)
+                    {
+                        GoPickup(World.NearestSniper);
+                        DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "ChangeWeapon/World.IsNearestSniperVisible/GoPickup(World.NearestSniper)", new Vec2(), 2, CustomDebug.VioletColor));
+                    }
 
-                    return;
-                }
-            }
-
-            if (Me.WeaponType == WeaponLootItem.WeaponType.Rifle && World.IsNearestSniperVisible)
-            {
-                GoPickup(World.NearestSniper);
-                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "ChangeWeapon/Me.WeaponType/GoPickup(World.NearestSniper);", new Vec2(), 2, CustomDebug.VioletColor));
+                    break;
+                case WeaponLootItem.WeaponType.Pistol:
+                case WeaponLootItem.WeaponType.None:
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
         }
 
