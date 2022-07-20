@@ -43,11 +43,14 @@ public class World
 
     public List<MyUnit> MyUnits { get; set; } = new();
     public List<MyUnit> MyTeammates => MyUnits.Where(u => u.Id != Me.Id).ToList();
+    public MyUnit NearestTeammate => MyTeammates.OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
+    public bool IsFarFromTeammate => HasAnyTeammates && Measurer.GetDistanceBetween(Me.Position, NearestTeammate.Position) >= Constants.ViewDistance * 0.75;
     public bool HasAnyTeammates => MyTeammates.Any();
 
     public MyUnit Commander => HasAnyTeammates
                                    ? MyUnits.OrderBy(u => u.Id).First()
                                    : Me;
+
 
     public bool IsImCommander => Commander.Id == Me.Id;
     public bool IsImDeputy => !IsImCommander;

@@ -157,7 +157,7 @@ public class Measurer
 
         var distance = GetDistanceBetween(from.Position, to.Position);
         var potentialCover = World.Objects.Cast<CustomItem>()
-                                  // .Union(World.AllUnits) // todo
+                                  .Union(World.MyTeammates)
                                   .Where(o => !o.IsBulletProof &&
                                               GetDistanceBetween(from.Position, o.Position) <= distance * 1.15 &&
                                               GetDistanceBetween(to.Position, o.Position) <= distance * 1.15);

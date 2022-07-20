@@ -91,6 +91,13 @@ namespace AiCup22
             {
                 GoTo(Measurer.GetZoneBorderPoint(Me));
                 DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "ReturnInZone/GoTo(Measurer.GetZoneBorderPoint(Me))", new Vec2(), 2, CustomDebug.VioletColor));
+                return;
+            }
+
+            if (Me.IsSpawning && World.IsFarFromTeammate)
+            {
+                GoTo(World.NearestTeammate);
+                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "GoToTarget/GoTo(World.MyTeammates.First()))", new Vec2(), 2, CustomDebug.VioletColor));
             }
         }
 
@@ -317,7 +324,7 @@ namespace AiCup22
                 return;
             }
 
-            if (World.IsImDeputy && World.IsFarFromCommander)
+            if (World.IsFarFromCommander)
             {
                 GoTo(World.Commander);
                 DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "GoToTarget/GoTo(World.MyTeammates.First()))", new Vec2(), 2, CustomDebug.VioletColor));
