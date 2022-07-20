@@ -30,8 +30,8 @@ namespace AiCup22
 
         public Order GetOrder(Game game, DebugInterface debugInterface)
         {
-            // DebugInterface = debugInterface; // debug on
-            DebugInterface = null; // debug off
+            DebugInterface = debugInterface; // debug on
+            // DebugInterface = null; // debug off
 
             Commands = new Dictionary<int, UnitOrder>();
             MyUnits = new List<MyUnit>();
@@ -90,14 +90,21 @@ namespace AiCup22
             if (World.NearToOutOfZone)
             {
                 GoTo(Measurer.GetZoneBorderPoint(Me));
-                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "ReturnInZone/GoTo(Measurer.GetZoneBorderPoint(Me))", new Vec2(), 2, CustomDebug.VioletColor));
+                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "ReturnInZone/1", new Vec2(), 2, CustomDebug.VioletColor));
                 return;
             }
 
             if (Me.IsSpawning && World.IsFarFromTeammate)
             {
                 GoTo(World.NearestTeammate);
-                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "GoToTarget/GoTo(World.MyTeammates.First()))", new Vec2(), 2, CustomDebug.VioletColor));
+                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "ReturnInZone/2", new Vec2(), 2, CustomDebug.VioletColor));
+                return;
+            }
+
+            if (Me.IsSpawning && World.IsNearestEnemyVisible)
+            {
+                GoBackFrom(World.NearestEnemy);
+                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "ReturnInZone/3", new Vec2(), 2, CustomDebug.VioletColor));
             }
         }
 
@@ -116,18 +123,18 @@ namespace AiCup22
             if (Me.IsShieldEmpty)
             {
                 // Heel
-                TakePotion(World.IsNearestEnemyVisible);
-                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "Heel/Me.IsShieldEmpty/TakePotion())", new Vec2(), 2, CustomDebug.VioletColor));
+                TakePotion(World.IsNearestShotEnemyVisible);
+                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "Heel/1", new Vec2(), 2, CustomDebug.VioletColor));
                 return;
             }
 
-            if (!Measurer.IsDistanceAllowToHit(World.NearestEnemy, Me)
+            if (!Measurer.IsDistanceAllowToHit(World.NearestShootEnemy, Me)
                 ||
-                !Measurer.IsClearVisible(World.NearestEnemy, Me))
+                !Measurer.IsClearVisible(World.NearestShootEnemy, Me))
             {
                 // Heel
-                TakePotion(World.IsNearestEnemyVisible);
-                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "Heel/IsDistanceAllowToHit/TakePotion())", new Vec2(), 2, CustomDebug.VioletColor));
+                TakePotion(World.IsNearestShotEnemyVisible);
+                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "Heel/2", new Vec2(), 2, CustomDebug.VioletColor));
             }
         }
 
@@ -188,26 +195,26 @@ namespace AiCup22
                 World.IsNearestShieldLootItemVisible)
             {
                 GoPickup(World.NearestShieldLootItem);
-                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "CollectPotions/Me.IsPotionsEmpty/GoPickup(World.NearestShieldLootItem);)", new Vec2(), 2, CustomDebug.VioletColor));
+                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "CollectPotions/1", new Vec2(), 2, CustomDebug.VioletColor));
                 return;
             }
 
             if (Me.NeedToCollectPotions &&
                 World.IsNearestShieldLootItemVisible &&
-                (!Measurer.IsDistanceAllowToHit(World.NearestEnemy, Me) ||
-                 !Measurer.IsClearVisible(World.NearestEnemy, Me)))
+                (!Measurer.IsDistanceAllowToHit(World.NearestShootEnemy, Me) ||
+                 !Measurer.IsClearVisible(World.NearestShootEnemy, Me)))
             {
                 GoPickup(World.NearestShieldLootItem);
-                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "CollectPotions/Measurer.IsDistanceAllowToHit(World.NearestEnemy, Me)/GoPickup(World.NearestShieldLootItem);)", new Vec2(), 2, CustomDebug.VioletColor));
+                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "CollectPotions/2", new Vec2(), 2, CustomDebug.VioletColor));
                 return;
             }
 
             if (!Me.IsPotionsFull &&
                 World.IsNearestShieldLootItemVisible &&
-                !World.IsNearestEnemyVisible)
+                !World.IsNearestShotEnemyVisible)
             {
                 GoPickup(World.NearestShieldLootItem);
-                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "CollectPotions/Measurer.IsDistanceAllowToHit(World.NearestEnemy, Me)/GoPickup(World.NearestShieldLootItem);)", new Vec2(), 2, CustomDebug.VioletColor));
+                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "CollectPotions/3", new Vec2(), 2, CustomDebug.VioletColor));
             }
         }
 
@@ -221,26 +228,26 @@ namespace AiCup22
             if (Me.IsAmmoEmpty && World.IsNearestActiveAmmoVisible())
             {
                 GoPickup(World.GetNearestActiveAmmoLoot());
-                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "CollectAmmo/Me.IsAmmoEmpty/GoPickup(World.GetNearestActiveAmmoLoot()))", new Vec2(), 2, CustomDebug.VioletColor));
+                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "CollectAmmo/1", new Vec2(), 2, CustomDebug.VioletColor));
                 return;
             }
 
             if (Me.NeedToCollectAmmo &&
                 World.IsNearestActiveAmmoVisible() &&
-                (!Measurer.IsDistanceAllowToHit(World.NearestEnemy, Me) ||
-                 !Measurer.IsClearVisible(World.NearestEnemy, Me)))
+                (!Measurer.IsDistanceAllowToHit(World.NearestShootEnemy, Me) ||
+                 !Measurer.IsClearVisible(World.NearestShootEnemy, Me)))
             {
                 GoPickup(World.GetNearestActiveAmmoLoot());
-                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "CollectAmmo/!Measurer.IsDistanceAllowToHit(World.NearestEnemy, Me)/GoPickup(World.GetNearestActiveAmmoLoot()))", new Vec2(), 2, CustomDebug.VioletColor));
+                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "CollectAmmo/2", new Vec2(), 2, CustomDebug.VioletColor));
                 return;
             }
 
             if (!Me.IsAmmoFull &&
                 World.IsNearestActiveAmmoVisible() &&
-                !World.IsNearestEnemyVisible)
+                !World.IsNearestShotEnemyVisible)
             {
                 GoPickup(World.GetNearestActiveAmmoLoot());
-                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "CollectAmmo/!Measurer.IsDistanceAllowToHit(World.NearestEnemy, Me)/GoPickup(World.GetNearestActiveAmmoLoot()))", new Vec2(), 2, CustomDebug.VioletColor));
+                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "CollectAmmo/3", new Vec2(), 2, CustomDebug.VioletColor));
             }
         }
 
@@ -260,12 +267,14 @@ namespace AiCup22
                         if (World.IsNearestRifleVisible && World.IsNearestRifleAmmoLootVisible)
                         {
                             GoPickup(World.NearestRifle);
+                            DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "ChangeWeapon/1", new Vec2(), 2, CustomDebug.VioletColor));
                             return;
                         }
 
                         if (World.IsNearestPistolVisible && World.IsNearestPistolAmmoLootVisible)
                         {
                             GoPickup(World.NearestPistol);
+                            DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "ChangeWeapon/2", new Vec2(), 2, CustomDebug.VioletColor));
                             return;
                         }
                     }
@@ -275,6 +284,7 @@ namespace AiCup22
                         if (World.IsNearestPistolVisible && World.IsNearestPistolAmmoLootVisible)
                         {
                             GoPickup(World.NearestPistol);
+                            DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "ChangeWeapon/3", new Vec2(), 2, CustomDebug.VioletColor));
                             return;
                         }
                     }
@@ -292,7 +302,7 @@ namespace AiCup22
                     if (World.IsNearestRifleVisible && World.IsNearestRifleAmmoLootVisible)
                     {
                         GoPickup(World.NearestRifle);
-                        DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "ChangeWeapon/World.IsNearestRifleVisible/GoPickup(World.NearestRifle);", new Vec2(), 2, CustomDebug.VioletColor));
+                        DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "ChangeWeapon/4", new Vec2(), 2, CustomDebug.VioletColor));
                     }
 
                     break;
@@ -300,7 +310,7 @@ namespace AiCup22
                     if (World.IsNearestSniperVisible && World.IsNearestSniperAmmoLootVisible)
                     {
                         GoPickup(World.NearestSniper);
-                        DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "ChangeWeapon/World.IsNearestSniperVisible/GoPickup(World.NearestSniper)", new Vec2(), 2, CustomDebug.VioletColor));
+                        DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "ChangeWeapon/5", new Vec2(), 2, CustomDebug.VioletColor));
                     }
 
                     break;
@@ -319,32 +329,32 @@ namespace AiCup22
             }
 
             // See anyone and have ammo
-            if (!World.IsNearestEnemyVisible || Me.IsAmmoEmpty)
+            if (!World.IsNearestShotEnemyVisible || Me.IsAmmoEmpty)
             {
                 return;
             }
 
             // Has distance and clear vision
-            if (Measurer.IsDistanceAllowToHit(Me, World.NearestEnemy) &&
-                Measurer.IsClearVisible(Me, World.NearestEnemy) &&
+            if (Measurer.IsDistanceAllowToHit(Me, World.NearestShootEnemy) &&
+                Measurer.IsClearVisible(Me, World.NearestShootEnemy) &&
                 Me.IsAimed)
             {
                 // Shoot
-                ComeToAim(World.NearestEnemy, true);
-                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "AttackEnemy/Measurer.IsClearVisible(Me, World.NearestEnemy)/ComeToAim(World.NearestEnemy, true)", new Vec2(), 2, CustomDebug.VioletColor));
+                ComeToAim(World.NearestShootEnemy, true);
+                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "AttackEnemy/1", new Vec2(), 2, CustomDebug.VioletColor));
                 return;
             }
 
-            if (Measurer.IsDistanceAllowToHit(Me, World.NearestEnemy))
+            if (Measurer.IsDistanceAllowToHit(Me, World.NearestShootEnemy))
             {
                 // Aim
-                ComeToAim(World.NearestEnemy);
-                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "AttackEnemy/ComeToAim(World.NearestEnemy)", new Vec2(), 2, CustomDebug.VioletColor));
+                ComeToAim(World.NearestShootEnemy);
+                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "AttackEnemy/2", new Vec2(), 2, CustomDebug.VioletColor));
                 return;
             }
 
-            GoTo(World.NearestEnemy);
-            DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "AttackEnemy/GoTo(World.NearestEnemy);", new Vec2(), 2, CustomDebug.VioletColor));
+            GoTo(World.NearestShootEnemy);
+            DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "AttackEnemy/3", new Vec2(), 2, CustomDebug.VioletColor));
         }
 
         private void GoToTarget()
@@ -357,24 +367,22 @@ namespace AiCup22
             if (World.IsFarFromCommander)
             {
                 GoTo(World.Commander);
-                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "GoToTarget/GoTo(World.MyTeammates.First()))", new Vec2(), 2, CustomDebug.VioletColor));
+                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "GoToTarget/1", new Vec2(), 2, CustomDebug.VioletColor));
                 return;
             }
 
             GoTo(Measurer.GetZoneBorderPoint(Me));
-            DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "GoToTarget/GoTo(Measurer.GetZoneBorderPoint(Me));", new Vec2(), 2, CustomDebug.VioletColor));
+            DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "GoToTarget/2", new Vec2(), 2, CustomDebug.VioletColor));
         }
 
         #endregion
 
         #region Actions
 
-        private void GoBackFrom(CustomUnit unit, bool withShoot = false)
+        private void GoBackFrom(CustomUnit unit)
         {
-            var movement = Measurer.GetSmartDirectionVelocity(Me, unit.Position, unit.Velocity);
-            var actionAim = new ActionOrder.Aim(withShoot);
-
-            Commands.Add(Me.Id, new UnitOrder(Measurer.GetRandomVector(), movement.direction, actionAim));
+            var movement = Measurer.GetSmartDirectionVelocity(Me, unit.Position, invertedVelocity: true);
+            Commands.Add(Me.Id, new UnitOrder(movement.velocity, Measurer.GetInvertedVector(Me.Direction), null));
         }
 
         private void GoPickup(CustomItem item)
@@ -410,7 +418,7 @@ namespace AiCup22
             var actionUseShieldPotion = new ActionOrder.UseShieldPotion();
             Commands.Add(Me.Id,
                          isNearestEnemyVisible
-                             ? new UnitOrder(Measurer.GetBulletsDodgeVelocity(Me, World.NearestEnemy), Measurer.GetVectorTo(Me.Position, World.NearestEnemy.Position), actionUseShieldPotion)
+                             ? new UnitOrder(Measurer.GetBulletsDodgeVelocity(Me, World.NearestShootEnemy), Measurer.GetVectorTo(Me.Position, World.NearestShootEnemy.Position), actionUseShieldPotion)
                              : new UnitOrder(Measurer.GetWiggleVelocity(Me.Direction), Measurer.GetInvertedVector(Me.Direction), actionUseShieldPotion));
         }
 

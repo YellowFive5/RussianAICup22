@@ -59,8 +59,12 @@ public class World
 
     public List<EnemyUnit> EnemyUnits { get; set; } = new();
 
-    public EnemyUnit NearestEnemy => EnemyUnits.Where(e => !e.IsSpawning)
-                                               .OrderBy(e => Measurer.GetDistanceBetween(Commander.Position, e.Position)).FirstOrDefault();
+    public EnemyUnit NearestShootEnemy => EnemyUnits
+                                              .Where(e => !e.IsSpawning)
+                                              .OrderBy(e => Measurer.GetDistanceBetween(Commander.Position, e.Position)).FirstOrDefault();
+
+    public bool IsNearestShotEnemyVisible => NearestShootEnemy != null;
+    public EnemyUnit NearestEnemy => EnemyUnits.OrderBy(e => Measurer.GetDistanceBetween(Commander.Position, e.Position)).FirstOrDefault();
 
     public bool IsNearestEnemyVisible => NearestEnemy != null;
     public EnemyUnit NearestWeakestEnemy => EnemyUnits.OrderBy(e => e.HealthShieldPoints).FirstOrDefault();
@@ -69,7 +73,7 @@ public class World
                                             .OrderByDescending(u => Game.Players.Single(p => p.Id == u.Unit.PlayerId).Score)
                                             .FirstOrDefault();
 
-    public double NearestEnemyDistance => Measurer.GetDistanceBetween(Me.Position, NearestEnemy.Position);
+    public double NearestEnemyDistance => Measurer.GetDistanceBetween(Me.Position, NearestShootEnemy.Position);
     public EnemyUnit NearestPistolEnemy => EnemyUnits.Where(e => e.WeaponType == WeaponLootItem.WeaponType.Pistol).OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
     public bool IsNearestPistolEnemyVisible => NearestPistolEnemy != null;
     public double NearestPistolEnemyDistance => Measurer.GetDistanceBetween(Me.Position, NearestPistolEnemy.Position);
