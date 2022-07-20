@@ -251,6 +251,36 @@ namespace AiCup22
                 return;
             }
 
+            if (World.ZoneRadius <= Constants.ViewDistance * 2) // weapon decrease
+            {
+                if (Me.IsAmmoEmpty)
+                {
+                    if (Me.WeaponType == WeaponLootItem.WeaponType.Sniper && !World.IsNearestSniperAmmoLootVisible)
+                    {
+                        if (World.IsNearestRifleVisible && World.IsNearestRifleAmmoLootVisible)
+                        {
+                            GoPickup(World.NearestRifle);
+                            return;
+                        }
+
+                        if (World.IsNearestPistolVisible && World.IsNearestPistolAmmoLootVisible)
+                        {
+                            GoPickup(World.NearestPistol);
+                            return;
+                        }
+                    }
+
+                    if (Me.WeaponType == WeaponLootItem.WeaponType.Rifle && !World.IsNearestRifleAmmoLootVisible)
+                    {
+                        if (World.IsNearestPistolVisible && World.IsNearestPistolAmmoLootVisible)
+                        {
+                            GoPickup(World.NearestPistol);
+                            return;
+                        }
+                    }
+                }
+            }
+
             if (World.WeaponRole == Me.WeaponType) // already changed
             {
                 return;
@@ -259,7 +289,7 @@ namespace AiCup22
             switch (World.WeaponRole)
             {
                 case WeaponLootItem.WeaponType.Rifle:
-                    if (World.IsNearestRifleVisible)
+                    if (World.IsNearestRifleVisible && World.IsNearestRifleAmmoLootVisible)
                     {
                         GoPickup(World.NearestRifle);
                         DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "ChangeWeapon/World.IsNearestRifleVisible/GoPickup(World.NearestRifle);", new Vec2(), 2, CustomDebug.VioletColor));
@@ -267,7 +297,7 @@ namespace AiCup22
 
                     break;
                 case WeaponLootItem.WeaponType.Sniper:
-                    if (World.IsNearestSniperVisible)
+                    if (World.IsNearestSniperVisible && World.IsNearestSniperAmmoLootVisible)
                     {
                         GoPickup(World.NearestSniper);
                         DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "ChangeWeapon/World.IsNearestSniperVisible/GoPickup(World.NearestSniper)", new Vec2(), 2, CustomDebug.VioletColor));
