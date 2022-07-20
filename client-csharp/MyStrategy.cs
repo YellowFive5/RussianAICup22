@@ -30,8 +30,8 @@ namespace AiCup22
 
         public Order GetOrder(Game game, DebugInterface debugInterface)
         {
-            DebugInterface = debugInterface; // debug on
-            // DebugInterface = null; // debug off
+            // DebugInterface = debugInterface; // debug on
+            DebugInterface = null; // debug off
 
             Commands = new Dictionary<int, UnitOrder>();
             MyUnits = new List<MyUnit>();
@@ -258,35 +258,32 @@ namespace AiCup22
                 return;
             }
 
-            if (World.ZoneRadius <= Constants.ViewDistance * 2) // weapon decrease
+            if (Me.IsAmmoEmpty)
             {
-                if (Me.IsAmmoEmpty)
+                if (Me.WeaponType == WeaponLootItem.WeaponType.Sniper && !World.IsNearestSniperAmmoLootVisible)
                 {
-                    if (Me.WeaponType == WeaponLootItem.WeaponType.Sniper && !World.IsNearestSniperAmmoLootVisible)
+                    if (World.IsNearestRifleVisible && World.IsNearestRifleAmmoLootVisible)
                     {
-                        if (World.IsNearestRifleVisible && World.IsNearestRifleAmmoLootVisible)
-                        {
-                            GoPickup(World.NearestRifle);
-                            DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "ChangeWeapon/1", new Vec2(), 2, CustomDebug.VioletColor));
-                            return;
-                        }
-
-                        if (World.IsNearestPistolVisible && World.IsNearestPistolAmmoLootVisible)
-                        {
-                            GoPickup(World.NearestPistol);
-                            DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "ChangeWeapon/2", new Vec2(), 2, CustomDebug.VioletColor));
-                            return;
-                        }
+                        GoPickup(World.NearestRifle);
+                        DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "ChangeWeapon/1", new Vec2(), 2, CustomDebug.VioletColor));
+                        return;
                     }
 
-                    if (Me.WeaponType == WeaponLootItem.WeaponType.Rifle && !World.IsNearestRifleAmmoLootVisible)
+                    if (World.IsNearestPistolVisible && World.IsNearestPistolAmmoLootVisible)
                     {
-                        if (World.IsNearestPistolVisible && World.IsNearestPistolAmmoLootVisible)
-                        {
-                            GoPickup(World.NearestPistol);
-                            DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "ChangeWeapon/3", new Vec2(), 2, CustomDebug.VioletColor));
-                            return;
-                        }
+                        GoPickup(World.NearestPistol);
+                        DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "ChangeWeapon/2", new Vec2(), 2, CustomDebug.VioletColor));
+                        return;
+                    }
+                }
+
+                if (Me.WeaponType == WeaponLootItem.WeaponType.Rifle && !World.IsNearestRifleAmmoLootVisible)
+                {
+                    if (World.IsNearestPistolVisible && World.IsNearestPistolAmmoLootVisible)
+                    {
+                        GoPickup(World.NearestPistol);
+                        DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "ChangeWeapon/3", new Vec2(), 2, CustomDebug.VioletColor));
+                        return;
                     }
                 }
             }

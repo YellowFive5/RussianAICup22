@@ -51,7 +51,6 @@ public class World
                                    ? MyUnits.OrderBy(u => u.Id).First()
                                    : Me;
 
-
     public bool IsImCommander => Commander.Id == Me.Id;
     public bool IsImDeputy => !IsImCommander;
 
@@ -60,8 +59,8 @@ public class World
     public List<EnemyUnit> EnemyUnits { get; set; } = new();
 
     public EnemyUnit NearestShootEnemy => EnemyUnits
-                                              .Where(e => !e.IsSpawning)
-                                              .OrderBy(e => Measurer.GetDistanceBetween(Commander.Position, e.Position)).FirstOrDefault();
+                                          .Where(e => !e.IsSpawning)
+                                          .OrderBy(e => Measurer.GetDistanceBetween(Commander.Position, e.Position)).FirstOrDefault();
 
     public bool IsNearestShotEnemyVisible => NearestShootEnemy != null;
     public EnemyUnit NearestEnemy => EnemyUnits.OrderBy(e => Measurer.GetDistanceBetween(Commander.Position, e.Position)).FirstOrDefault();
