@@ -21,8 +21,27 @@ public static class Program
         var runnerExe = @$"{runnerDir}\aicup22.exe";
         var workFolder = new DirectoryInfo($"{runnerDir}/../StrategyTester");
         var testResultsFile = $"{runnerDir}/../TestResults.txt";
-        var testIterations = 500;
-        var instances = 50;
+
+        var parallelPool = 23;
+
+        var testIterations = 0;
+        for (var i = 500; i < 550; i++)
+        {
+            if (i % parallelPool == 0)
+            {
+                testIterations = i;
+                break;
+            }
+        }
+
+        var cb = new Dictionary<int, string>();
+        for (var i = 0; i < parallelPool; i++)
+        {
+            cb.TryAdd(i, "");
+        }
+
+        var counter = 1;
+        var locker = new object();
 
         // Linux
         // var runnerDir = @"/home/yellowfive/OneDrive/MY/#CODE/#RussianAiCup/'22/app-linux";
@@ -32,23 +51,51 @@ public static class Program
         // var testIterations = 500;
         // var instances = 20;
 
-        for (var ft = 0; ft < testIterations / instances; ft++)
-        {
-            var result = Parallel.For(0,
-                                      instances,
-                                      (i, state) =>
+        Parallel.For(0,
+                     testIterations / parallelPool,
+                     (i1, state) =>
+                     {
+                         Parallel.For(0,
+                                      parallelPool,
+                                      (i2, state) =>
                                       {
-                                          var p = Process.Start(new ProcessStartInfo(runnerExe)
-                                                                {
-                                                                    // Arguments = $"--config {runnerDir}/../StrategyTester/configs/config({i}).json --batch-mode --save-results ../StrategyTester/{Guid.NewGuid()}.json",
-                                                                    Arguments = $"--config {runnerDir}/../StrategyTester/configs2/config({i}).json --batch-mode --save-results ../StrategyTester/{Guid.NewGuid()}.json",
-                                                                    // Arguments = $"--config {runnerDir}/../StrategyTester/configs3/config({i}).json --batch-mode --save-results ../StrategyTester/{Guid.NewGuid()}.json",
-                                                                    WorkingDirectory = runnerDir
-                                                                });
-                                          p.WaitForExitAsync().Wait();
-                                          Console.WriteLine($"- - - - ~{instances * (ft + 1)} / 500 - - - - ");
+                                          while (true)
+                                          {
+                                              bool contains;
+                                              lock (locker)
+                                              {
+                                                  contains = cb.ContainsKey(i2);
+                                              }
+
+                                              if (contains)
+                                              {
+                                                  lock (locker)
+                                                  {
+                                                      cb.Remove(i2, out _);
+                                                  }
+
+                                                  var p = Process.Start(new ProcessStartInfo(runnerExe)
+                                                                        {
+                                                                            WorkingDirectory = runnerDir,
+                                                                            
+                                                                            // Arguments = $"--config {runnerDir}/../StrategyTester/configs/config({i}).json --batch-mode --save-results ../StrategyTester/{Guid.NewGuid()}.json",
+                                                                            Arguments = $"--config {runnerDir}/../StrategyTester/configs2/config({i2}).json --batch-mode --save-results ../StrategyTester/{Guid.NewGuid()}.json",
+                                                                            // Arguments = $"--config {runnerDir}/../StrategyTester/configs3/config({i}).json --batch-mode --save-results ../StrategyTester/{Guid.NewGuid()}.json",
+                                                                        });
+                                                  p.WaitForExitAsync().Wait();
+                                                  Console.WriteLine($"- - - - ~{counter++} / {testIterations} - - - - ");
+                                                  lock (locker)
+                                                  {
+                                                      cb.TryAdd(i2, "");
+                                                  }
+
+                                                  return;
+                                              }
+
+                                              Task.Delay(TimeSpan.FromSeconds(1)).Wait();
+                                          }
                                       });
-        }
+                     });
 
         var kills = new List<double>();
         var damages = new List<double>();
@@ -63,7 +110,12 @@ public static class Program
             damages.Add(result["results"]["players"][0]["damage"].Value<double>());
             places.Add(result["results"]["players"][0]["place"].Value<double>());
             scores.Add(result["results"]["players"][0]["score"].Value<double>());
-            if (result["players"][0]["crash"].Value<string>() != null)
+
+            try
+            {
+                result["players"][0]["crash"].Value<string>();
+            }
+            catch (Exception)
             {
                 crashes++;
             }
