@@ -16,7 +16,6 @@ public class Measurer
     public World World { get; }
     public DebugInterface DebugInterface { get; }
     public readonly double[] WeaponRanges = { 30.3, 20.3, 40.4 };
-    public const double InZonePointCoefficient = 0.1;
     public const double UnitRadius = 1.0;
 
     public Measurer(World world, DebugInterface debugInterface)
@@ -133,8 +132,8 @@ public class Measurer
         var vX = item.Position.X - World.ZoneCenter.X;
         var vY = item.Position.Y - World.ZoneCenter.Y;
         var magV = Math.Sqrt(vX * vX + vY * vY);
-        var aX = World.ZoneCenter.X + vX / magV * (World.ZoneRadius - (InZonePointCoefficient * World.ZoneRadius + UnitRadius * 2.5));
-        var aY = World.ZoneCenter.Y + vY / magV * (World.ZoneRadius - (InZonePointCoefficient * World.ZoneRadius + UnitRadius * 2.5));
+        var aX = World.ZoneCenter.X + vX / magV * (World.ZoneRadius * World.InZonePointCoefficient - UnitRadius * 2.5);
+        var aY = World.ZoneCenter.Y + vY / magV * (World.ZoneRadius * World.InZonePointCoefficient - UnitRadius * 2.5);
         return new Vec2 { X = aX, Y = aY };
     }
 

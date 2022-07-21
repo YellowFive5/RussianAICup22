@@ -361,13 +361,6 @@ namespace AiCup22
                 return;
             }
 
-            if (World.IsFarFromCommander)
-            {
-                GoTo(World.Commander);
-                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "GoToTarget/1", new Vec2(), 2, CustomDebug.VioletColor));
-                return;
-            }
-
             GoTo(Measurer.GetZoneBorderPoint(Me));
             DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "GoToTarget/2", new Vec2(), 2, CustomDebug.VioletColor));
         }
