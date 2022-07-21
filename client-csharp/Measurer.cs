@@ -132,8 +132,8 @@ public class Measurer
         var vX = item.Position.X - World.ZoneCenter.X;
         var vY = item.Position.Y - World.ZoneCenter.Y;
         var magV = Math.Sqrt(vX * vX + vY * vY);
-        var aX = World.ZoneCenter.X + vX / magV * (World.ZoneRadius * World.InZonePointCoefficient - UnitRadius * 2.5);
-        var aY = World.ZoneCenter.Y + vY / magV * (World.ZoneRadius * World.InZonePointCoefficient - UnitRadius * 2.5);
+        var aX = World.ZoneCenter.X + vX / magV * (World.ZoneRadius * World.InZonePointCoefficient - UnitRadius * 1.6);
+        var aY = World.ZoneCenter.Y + vY / magV * (World.ZoneRadius * World.InZonePointCoefficient - UnitRadius * 1.6);
         return new Vec2 { X = aX, Y = aY };
     }
 

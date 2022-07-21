@@ -35,7 +35,7 @@ public class World
                                                        : WeaponLootItem.WeaponType.Rifle;
 
     public bool OutOfZone => Measurer.GetDistanceBetween(ZoneCenter, Me.Position) >= Game.Zone.CurrentRadius;
-    public bool NearToOutOfZone => Measurer.GetDistanceBetween(ZoneCenter, Me.Position) >= Game.Zone.CurrentRadius * OutOfZonePointCoefficient - Constants.UnitRadius * 2.5;
+    public bool NearToOutOfZone => Measurer.GetDistanceBetween(ZoneCenter, Me.Position) >= Game.Zone.CurrentRadius * OutOfZonePointCoefficient - Constants.UnitRadius * 1.6;
     public const double InZonePointCoefficient = 0.9;
     public const double OutOfZonePointCoefficient = 1;
 
@@ -61,7 +61,7 @@ public class World
 
     public EnemyUnit NearestShootEnemy => EnemyUnits
                                           .Where(e => !e.IsSpawning)
-                                          .OrderBy(e => Measurer.GetDistanceBetween(Commander.Position, e.Position)).FirstOrDefault();
+                                          .OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
 
     public bool IsNearestShotEnemyVisible => NearestShootEnemy != null;
     public EnemyUnit NearestEnemy => EnemyUnits.OrderBy(e => Measurer.GetDistanceBetween(Commander.Position, e.Position)).FirstOrDefault();
