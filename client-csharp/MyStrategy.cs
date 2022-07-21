@@ -129,7 +129,7 @@ namespace AiCup22
 
             if (!Measurer.IsDistanceAllowToHit(World.NearestShootEnemy, Me)
                 ||
-                !Measurer.IsClearVisible(World.NearestShootEnemy, Me))
+                !Measurer.IsClearVisible(World.NearestShootEnemy.Position, Me.Position))
             {
                 // Heel
                 TakePotion(World.IsNearestShotEnemyVisible);
@@ -201,7 +201,7 @@ namespace AiCup22
             if (Me.NeedToCollectPotions &&
                 World.IsNearestShieldLootItemVisible &&
                 (!Measurer.IsDistanceAllowToHit(World.NearestShootEnemy, Me) ||
-                 !Measurer.IsClearVisible(World.NearestShootEnemy, Me)))
+                 !Measurer.IsClearVisible(World.NearestShootEnemy.Position, Me.Position)))
             {
                 GoPickup(World.NearestShieldLootItem);
                 DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "CollectPotions/2", new Vec2(), 2, CustomDebug.VioletColor));
@@ -234,7 +234,7 @@ namespace AiCup22
             if (Me.NeedToCollectAmmo &&
                 World.IsNearestActiveAmmoVisible() &&
                 (!Measurer.IsDistanceAllowToHit(World.NearestShootEnemy, Me) ||
-                 !Measurer.IsClearVisible(World.NearestShootEnemy, Me)))
+                 !Measurer.IsClearVisible(World.NearestShootEnemy.Position, Me.Position)))
             {
                 GoPickup(World.GetNearestActiveAmmoLoot());
                 DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "CollectAmmo/2", new Vec2(), 2, CustomDebug.VioletColor));
@@ -353,7 +353,7 @@ namespace AiCup22
 
             // Has distance and clear vision
             if (Measurer.IsDistanceAllowToHit(Me, World.NearestShootEnemy) &&
-                Measurer.IsClearVisible(Me, World.NearestShootEnemy) &&
+                Measurer.IsClearVisible(Me.Position, World.NearestShootEnemy.Position) &&
                 Me.IsAimed)
             {
                 // Shoot

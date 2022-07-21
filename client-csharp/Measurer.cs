@@ -1,6 +1,7 @@
 ﻿#region Usings
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using AiCup22.CustomModel;
@@ -147,29 +148,24 @@ public class Measurer
         return GetDistanceBetween(from.Position, to.Position) <= WeaponRanges[(int)from.WeaponType] * coefficient;
     }
 
-    public bool IsClearVisible(CustomUnit from, CustomUnit to)
+    public bool IsClearVisible(Vec2 from, Vec2 to)
     {
-        if (from == null || to == null)
-        {
-            return false;
-        }
-
-        var distance = GetDistanceBetween(from.Position, to.Position);
+        var distance = GetDistanceBetween(from, to);
         var potentialCover = World.Objects.Cast<CustomItem>()
                                   .Union(World.MyTeammates)
                                   .Where(o => !o.IsBulletProof &&
-                                              GetDistanceBetween(from.Position, o.Position) <= distance * 1.15 &&
-                                              GetDistanceBetween(to.Position, o.Position) <= distance * 1.15);
+                                              GetDistanceBetween(from, o.Position) <= distance * 1.15 &&
+                                              GetDistanceBetween(to, o.Position) <= distance * 1.15);
 
-        var dpx = to.Position.X - from.Position.X;
-        var dpy = to.Position.Y - from.Position.Y;
+        var dpx = to.X - from.X;
+        var dpy = to.Y - from.Y;
         var a = dpx * dpx + dpy * dpy;
         foreach (var o in potentialCover)
         {
-            var b = 2 * (dpx * (from.Position.X - o.Position.X) + dpy * (from.Position.Y - o.Position.Y));
+            var b = 2 * (dpx * (from.X - o.Position.X) + dpy * (from.Y - o.Position.Y));
             var c = o.Position.X * o.Position.X + o.Position.Y * o.Position.Y;
-            c += from.Position.X * from.Position.X + from.Position.Y * from.Position.Y;
-            c -= 2 * (o.Position.X * from.Position.X + o.Position.Y * from.Position.Y);
+            c += from.X * from.X + from.Y * from.Y;
+            c -= 2 * (o.Position.X * from.X + o.Position.Y * from.Y);
             c -= o.Radius * o.Radius;
             var bb4ac = b * b - 4 * a * c;
             if (Math.Abs(a) < float.Epsilon || bb4ac < 0)
@@ -346,5 +342,30 @@ public class Measurer
                    X = -to.Y,
                    Y = to.X
                };
+    }
+
+    public Vec2 FindCover(CustomUnit @for, CustomUnit from)
+    {
+        var coverValue = 21;
+        var xX = (int)@for.Position.X;
+        var yY = (int)@for.Position.Y;
+        var covers = new List<Vec2>();
+        var potentialCover = World.Objects.Cast<CustomItem>()
+                                  .Where(o => GetDistanceBetween(@for.Position, o.Position) <= coverValue);
+
+        for (int x = xX - coverValue; x < xX + coverValue; x += 3)
+        {
+            for (int y = yY - coverValue; y < yY + coverValue; y += 3)
+            {
+                if (!IsClearVisible(from.Position, new Vec2(x, y)) &&
+                    !potentialCover.Any(p => GetDistanceBetween(p.Position, new Vec2(x, y)) < p.Radius + World.Constants.UnitRadius))
+                {
+                    covers.Add(new Vec2(x, y));
+                }
+            }
+        }
+
+        return covers.OrderBy(c => GetDistanceBetween(c, @for.Position))
+                     .FirstOrDefault();
     }
 }
