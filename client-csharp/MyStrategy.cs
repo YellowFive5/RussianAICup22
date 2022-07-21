@@ -358,7 +358,7 @@ namespace AiCup22
             }
 
             GoTo(Measurer.GetZoneBorderPoint(Me));
-            DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "GoToTarget/2", new Vec2(), 2, CustomDebug.VioletColor));
+            DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "GoToTarget/1", new Vec2(), 2, CustomDebug.VioletColor));
         }
 
         #endregion

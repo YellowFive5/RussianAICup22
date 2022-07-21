@@ -36,7 +36,7 @@ public class World
 
     public bool OutOfZone => Measurer.GetDistanceBetween(ZoneCenter, Me.Position) >= Game.Zone.CurrentRadius;
     public bool NearToOutOfZone => Measurer.GetDistanceBetween(ZoneCenter, Me.Position) >= Game.Zone.CurrentRadius * OutOfZonePointCoefficient - Constants.UnitRadius * 1.6;
-    public const double InZonePointCoefficient = 0.9;
+    public const double InZonePointCoefficient = 0.75;
     public const double OutOfZonePointCoefficient = 1;
 
     public List<CustomUnit> AllUnits => MyUnits.Cast<CustomUnit>()
