@@ -42,6 +42,7 @@ public static class Program
                                                                 {
                                                                     // Arguments = $"--config {runnerDir}/../StrategyTester/configs/config({i}).json --batch-mode --save-results ../StrategyTester/{Guid.NewGuid()}.json",
                                                                     Arguments = $"--config {runnerDir}/../StrategyTester/configs2/config({i}).json --batch-mode --save-results ../StrategyTester/{Guid.NewGuid()}.json",
+                                                                    // Arguments = $"--config {runnerDir}/../StrategyTester/configs3/config({i}).json --batch-mode --save-results ../StrategyTester/{Guid.NewGuid()}.json",
                                                                     WorkingDirectory = runnerDir
                                                                 });
                                           p.WaitForExitAsync().Wait();
