@@ -287,7 +287,7 @@ namespace AiCup22
                 }
             }
 
-            if (Me.WeaponType == WeaponLootItem.WeaponType.Pistol)
+            if (Me.WeaponType == WeaponLootItem.WeaponType.None)
             {
                 if (World.IsNearestSniperVisible && World.IsNearestSniperAmmoLootVisible)
                 {
@@ -302,6 +302,30 @@ namespace AiCup22
                     DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "ChangeWeapon/5", new Vec2(), 2, CustomDebug.VioletColor));
                     return;
                 }
+
+                if (World.IsNearestPistolVisible && World.IsNearestPistolAmmoLootVisible)
+                {
+                    GoPickup(World.NearestPistol);
+                    DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "ChangeWeapon/6", new Vec2(), 2, CustomDebug.VioletColor));
+                    return;
+                }
+            }
+
+            if (Me.WeaponType == WeaponLootItem.WeaponType.Pistol)
+            {
+                if (World.IsNearestSniperVisible && World.IsNearestSniperAmmoLootVisible)
+                {
+                    GoPickup(World.NearestSniper);
+                    DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "ChangeWeapon/7", new Vec2(), 2, CustomDebug.VioletColor));
+                    return;
+                }
+
+                if (World.IsNearestRifleVisible && World.IsNearestRifleAmmoLootVisible)
+                {
+                    GoPickup(World.NearestRifle);
+                    DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "ChangeWeapon/8", new Vec2(), 2, CustomDebug.VioletColor));
+                    return;
+                }
             }
 
             if (Me.WeaponType == WeaponLootItem.WeaponType.Rifle)
@@ -309,7 +333,7 @@ namespace AiCup22
                 if (World.IsNearestSniperVisible && World.IsNearestSniperAmmoLootVisible)
                 {
                     GoPickup(World.NearestSniper);
-                    DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "ChangeWeapon/6", new Vec2(), 2, CustomDebug.VioletColor));
+                    DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "ChangeWeapon/9", new Vec2(), 2, CustomDebug.VioletColor));
                 }
             }
         }

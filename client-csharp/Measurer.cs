@@ -139,7 +139,7 @@ public class Measurer
 
     public bool IsDistanceAllowToHit(CustomUnit from, CustomUnit to, double coefficient = 1.0)
     {
-        if (from == null || to == null)
+        if (from == null || to == null || from.WeaponType == WeaponLootItem.WeaponType.None)
         {
             return false;
         }

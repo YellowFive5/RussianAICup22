@@ -62,7 +62,7 @@ public static class Program
             damages.Add(result["results"]["players"][0]["damage"].Value<double>());
             places.Add(result["results"]["players"][0]["place"].Value<double>());
             scores.Add(result["results"]["players"][0]["score"].Value<double>());
-            if (result["players"][0]["crashed"].Value<bool>())
+            if (result["players"][0]["crash"].Value<string>() != null)
             {
                 crashes++;
             }
