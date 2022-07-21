@@ -58,6 +58,24 @@ public class World
     public bool IsFarFromCommander => IsImDeputy && Measurer.GetDistanceBetween(Me.Position, Commander.Position) >= Constants.ViewDistance * 0.75;
 
     public List<EnemyUnit> EnemyUnits { get; set; } = new();
+    public double DangerZoneRadius => 15.0;
+
+    public Vec2 DangerZone => GetDangerZone();
+    public bool InDangerZone => Measurer.GetDistanceBetween(DangerZone, Me.Position) <= DangerZoneRadius;
+
+    private Vec2 GetDangerZone()
+    {
+        foreach (var enemyUnit in EnemyUnits)
+        {
+            if (EnemyUnits.Count(e => Measurer.GetDistanceBetween(e.Position, enemyUnit.Position) < DangerZoneRadius) >= MyUnits.Count * 2)
+            {
+                return enemyUnit.Position;
+            }
+        }
+
+        return new Vec2(1000, 1000);
+    }
+
 
     public EnemyUnit NearestShootEnemy => EnemyUnits
                                           .Where(e => !e.IsSpawning)
@@ -92,31 +110,61 @@ public class World
 
     public List<ShieldLootItem> ShieldItems { get; set; } = new();
 
-    public ShieldLootItem NearestShieldLootItem => ShieldItems.OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position))
+    public ShieldLootItem NearestShieldLootItem => ShieldItems.Where(i => Measurer.GetDistanceBetween(i.Position, DangerZone) > DangerZoneRadius)
+                                                              .OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position))
                                                               .FirstOrDefault();
 
     public bool IsNearestShieldLootItemVisible => NearestShieldLootItem != null;
 
     public List<WeaponLootItem> WeaponItems { get; set; } = new();
 
-    public WeaponLootItem NearestPistol => WeaponItems.Where(e => e.Type == WeaponLootItem.WeaponType.Pistol).OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
+    public WeaponLootItem NearestPistol => WeaponItems.Where(e => e.Type == WeaponLootItem.WeaponType.Pistol)
+                                                      .Where(i => Measurer.GetDistanceBetween(i.Position, DangerZone) > DangerZoneRadius)
+                                                      .OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
 
     public bool IsNearestPistolVisible => NearestPistol != null;
-    public WeaponLootItem NearestRifle => WeaponItems.Where(e => e.Type == WeaponLootItem.WeaponType.Rifle).OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
+
+    public WeaponLootItem NearestRifle => WeaponItems.Where(e => e.Type == WeaponLootItem.WeaponType.Rifle)
+                                                     .Where(i => Measurer.GetDistanceBetween(i.Position, DangerZone) > DangerZoneRadius)
+                                                     .OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
+
     public bool IsNearestRifleVisible => NearestRifle != null;
-    public WeaponLootItem NearestSniper => WeaponItems.Where(e => e.Type == WeaponLootItem.WeaponType.Sniper).OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
+
+    public WeaponLootItem NearestSniper => WeaponItems.Where(e => e.Type == WeaponLootItem.WeaponType.Sniper)
+                                                      .Where(i => Measurer.GetDistanceBetween(i.Position, DangerZone) > DangerZoneRadius)
+                                                      .OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
+
     public bool IsNearestSniperVisible => NearestSniper != null;
     public List<AmmoLootItem> AmmoItems { get; set; } = new();
-    public List<AmmoLootItem> PistolAmmoLoot => AmmoItems.Where(e => e.Type == WeaponLootItem.WeaponType.Pistol).ToList();
-    public AmmoLootItem NearestPistolAmmoLoot => AmmoItems.Where(e => e.Type == WeaponLootItem.WeaponType.Pistol).OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
+
+    public List<AmmoLootItem> PistolAmmoLoot => AmmoItems.Where(e => e.Type == WeaponLootItem.WeaponType.Pistol)
+                                                         .Where(i => Measurer.GetDistanceBetween(i.Position, DangerZone) > DangerZoneRadius)
+                                                         .ToList();
+
+    public AmmoLootItem NearestPistolAmmoLoot => AmmoItems.Where(e => e.Type == WeaponLootItem.WeaponType.Pistol)
+                                                          .Where(i => Measurer.GetDistanceBetween(i.Position, DangerZone) > DangerZoneRadius)
+                                                          .OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
+
     public bool IsNearestPistolAmmoLootVisible => NearestPistolAmmoLoot != null;
-    public List<AmmoLootItem> RifleAmmoLoot => AmmoItems.Where(e => e.Type == WeaponLootItem.WeaponType.Rifle).ToList();
 
-    public AmmoLootItem NearestRifleAmmoLoot => AmmoItems.Where(e => e.Type == WeaponLootItem.WeaponType.Rifle).OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
+    public List<AmmoLootItem> RifleAmmoLoot => AmmoItems.Where(e => e.Type == WeaponLootItem.WeaponType.Rifle)
+                                                        .Where(i => Measurer.GetDistanceBetween(i.Position, DangerZone) > DangerZoneRadius)
+                                                        .ToList();
+
+    public AmmoLootItem NearestRifleAmmoLoot => AmmoItems.Where(e => e.Type == WeaponLootItem.WeaponType.Rifle)
+                                                         .Where(i => Measurer.GetDistanceBetween(i.Position, DangerZone) > DangerZoneRadius)
+                                                         .OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
+
     public bool IsNearestRifleAmmoLootVisible => NearestRifleAmmoLoot != null;
-    public List<AmmoLootItem> SniperAmmoLoot => AmmoItems.Where(e => e.Type == WeaponLootItem.WeaponType.Sniper).ToList();
 
-    public AmmoLootItem NearestSniperAmmoLoot => AmmoItems.Where(e => e.Type == WeaponLootItem.WeaponType.Sniper).OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
+    public List<AmmoLootItem> SniperAmmoLoot => AmmoItems.Where(e => e.Type == WeaponLootItem.WeaponType.Sniper)
+                                                         .Where(i => Measurer.GetDistanceBetween(i.Position, DangerZone) > DangerZoneRadius)
+                                                         .ToList();
+
+    public AmmoLootItem NearestSniperAmmoLoot => AmmoItems.Where(e => e.Type == WeaponLootItem.WeaponType.Sniper)
+                                                          .Where(i => Measurer.GetDistanceBetween(i.Position, DangerZone) > DangerZoneRadius)
+                                                          .OrderBy(e => Measurer.GetDistanceBetween(Me.Position, e.Position)).FirstOrDefault();
+
     public bool IsNearestSniperAmmoLootVisible => NearestSniperAmmoLoot != null;
 
     public AmmoLootItem GetNearestActiveAmmoLoot()

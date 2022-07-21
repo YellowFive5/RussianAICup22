@@ -368,4 +368,18 @@ public class Measurer
         return covers.OrderBy(c => GetDistanceBetween(c, @for.Position))
                      .FirstOrDefault();
     }
+
+    public static Vec2 FindCenterPoint(List<Vec2> points)
+    {
+        double totalX = 0, totalY = 0;
+        foreach (Vec2 p in points)
+        {
+            totalX += p.X;
+            totalY += p.Y;
+        }
+
+        double centerX = totalX / points.Count;
+        double centerY = totalY / points.Count;
+        return new Vec2(centerX, centerY);
+    }
 }

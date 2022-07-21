@@ -62,6 +62,7 @@ namespace AiCup22
             // DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, World.Me.Potions.ToString(), new Vec2(), 5, CustomDebug.VioletColor));
             // DebugInterface?.Add(new DebugData.Ring(World.NearestSniperAmmoLoot.Position, 2, 2, CustomDebug.VioletColor));
             // DebugInterface?.Add(new DebugData.PolyLine(new[] { new Vec2(50,100), new Vec2(0,50) }, 5, CustomDebug.GreenColor));
+            // DebugInterface?.Add(new DebugData.Ring(World.DangerZone, 2, 2, CustomDebug.RedColor));
 
             ReturnInZone();
 
@@ -93,17 +94,24 @@ namespace AiCup22
                 return;
             }
 
+            if (World.InDangerZone)
+            {
+                GoBackFrom(World.DangerZone);
+                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "ReturnInZone/2", new Vec2(), 2, CustomDebug.VioletColor));
+                return;
+            }
+
             if (Me.IsSpawning && World.IsFarFromTeammate)
             {
                 GoTo(World.NearestTeammate);
-                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "ReturnInZone/2", new Vec2(), 2, CustomDebug.VioletColor));
+                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "ReturnInZone/3", new Vec2(), 2, CustomDebug.VioletColor));
                 return;
             }
 
             if (Me.IsSpawning && World.IsNearestEnemyVisible)
             {
                 GoBackFrom(World.NearestEnemy);
-                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "ReturnInZone/3", new Vec2(), 2, CustomDebug.VioletColor));
+                DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "ReturnInZone/4", new Vec2(), 2, CustomDebug.VioletColor));
             }
         }
 
@@ -392,6 +400,12 @@ namespace AiCup22
         private void GoBackFrom(CustomUnit unit)
         {
             var movement = Measurer.GetSmartDirectionVelocity(Me, unit.Position, invertedVelocity: true);
+            Commands.Add(Me.Id, new UnitOrder(movement.velocity, Measurer.GetInvertedVector(Me.Direction), null));
+        }
+
+        private void GoBackFrom(Vec2 point)
+        {
+            var movement = Measurer.GetSmartDirectionVelocity(Me, point, invertedVelocity: true);
             Commands.Add(Me.Id, new UnitOrder(movement.velocity, Measurer.GetInvertedVector(Me.Direction), null));
         }
 
