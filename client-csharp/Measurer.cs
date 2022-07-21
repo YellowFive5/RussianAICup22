@@ -135,7 +135,10 @@ public class Measurer
         var magV = Math.Sqrt(vX * vX + vY * vY);
         var aX = World.ZoneCenter.X + vX / magV * (World.ZoneRadius * World.InZonePointCoefficient - UnitRadius * 1.6);
         var aY = World.ZoneCenter.Y + vY / magV * (World.ZoneRadius * World.InZonePointCoefficient - UnitRadius * 1.6);
-        return new Vec2 { X = aX, Y = aY };
+
+        var angle = FindAngle(item.Position, World.ZoneCenter) * -1;
+        
+        return new Vec2 { X = aX + Math.Sin(angle), Y = aY + Math.Cos(angle) };
     }
 
     public bool IsDistanceAllowToHit(CustomUnit from, CustomUnit to, double coefficient = 1.0)
