@@ -80,7 +80,7 @@ public static class Program
                                                                             
                                                                             // Arguments = $"--config {runnerDir}/../StrategyTester/configs/config({i}).json --batch-mode --save-results ../StrategyTester/{Guid.NewGuid()}.json",
                                                                             Arguments = $"--config {runnerDir}/../StrategyTester/configs2/config({i2}).json --batch-mode --save-results ../StrategyTester/{Guid.NewGuid()}.json",
-                                                                            // Arguments = $"--config {runnerDir}/../StrategyTester/configs3/config({i}).json --batch-mode --save-results ../StrategyTester/{Guid.NewGuid()}.json",
+                                                                            // Arguments = $"--config {runnerDir}/../StrategyTester/configs3/config({i2}).json --batch-mode --save-results ../StrategyTester/{Guid.NewGuid()}.json",
                                                                         });
                                                   p.WaitForExitAsync().Wait();
                                                   Console.WriteLine($"- - - - ~{counter++} / {testIterations} - - - - ");

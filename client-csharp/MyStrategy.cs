@@ -94,7 +94,7 @@ namespace AiCup22
                 return;
             }
 
-            if (World.InDangerZone)
+            if (World.IsInDangerZone)
             {
                 GoBackFrom(World.DangerZone);
                 DebugInterface?.Add(new DebugData.PlacedText(World.Me.Position, "ReturnInZone/2", new Vec2(), 2, CustomDebug.VioletColor));
@@ -425,7 +425,12 @@ namespace AiCup22
         private void GoTo(Vec2 point)
         {
             var movement = Measurer.GetSmartDirectionVelocity(Me, point);
+            // Commands.Add(Me.Id,
+            //              World.IsNearestShotEnemyVisible
+            //                  ? new UnitOrder(movement.velocity, Measurer.GetVectorTo(Me.Position, World.NearestShootEnemy.Position), new ActionOrder.Aim(false))
+            //                  : new UnitOrder(movement.velocity, Measurer.GetInvertedVector(Me.Direction), null));
             Commands.Add(Me.Id, new UnitOrder(movement.velocity, Measurer.GetInvertedVector(Me.Direction), null));
+
         }
 
         private void ComeToAim(CustomUnit unit, bool withShot = false)

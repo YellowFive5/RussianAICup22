@@ -61,7 +61,7 @@ public class World
     public double DangerZoneRadius => 15.0;
 
     public Vec2 DangerZone => GetDangerZone();
-    public bool InDangerZone => Measurer.GetDistanceBetween(DangerZone, Me.Position) <= DangerZoneRadius;
+    public bool IsInDangerZone => Measurer.GetDistanceBetween(DangerZone, Me.Position) <= DangerZoneRadius;
 
     private Vec2 GetDangerZone()
     {
@@ -69,7 +69,8 @@ public class World
         {
             if (EnemyUnits.Count(e => Measurer.GetDistanceBetween(e.Position, enemyUnit.Position) < DangerZoneRadius) >= MyUnits.Count * 2)
             {
-                return enemyUnit.Position;
+                return EnemyUnits.Where(e => Measurer.GetDistanceBetween(e.Position, enemyUnit.Position) < DangerZoneRadius)
+                                 .OrderBy(e => Measurer.GetDistanceBetween(e.Position, Me.Position)).First().Position;
             }
         }
 
